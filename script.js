@@ -3,6 +3,15 @@ const BLOCKS_PER_DAY = 144;
 
 let networkHashrateHs = null;
 let networkDifficulty = null;
+let btcPrices = null; // { usd, eur, pln }
+
+function numberLocale() {
+  return currentLang === "pl" ? "pl-PL" : "en-US";
+}
+
+function formatNumber(n, digits = 0) {
+  return n.toLocaleString(numberLocale(), { maximumFractionDigits: digits });
+}
 
 async function fetchNetworkHashrate() {
   const netInfo = document.getElementById("net-info");
@@ -11,17 +20,24 @@ async function fetchNetworkHashrate() {
     const data = await res.json();
     networkHashrateHs = data.currentHashrate;
     networkDifficulty = data.currentDifficulty;
-    const netInEHs = networkHashrateHs / 1e18;
-    const diffInT = networkDifficulty / 1e12;
-    netInfo.textContent = `Sieć Bitcoin na żywo: ~${netInEHs.toFixed(1)} EH/s, trudność ~${diffInT.toFixed(2)} T (mempool.space)`;
+    netInfo.textContent = t("net_info", (networkHashrateHs / 1e18).toFixed(1), (networkDifficulty / 1e12).toFixed(2));
   } catch (e) {
-    netInfo.textContent = "Nie udało się pobrać aktualnego hashrate/trudności sieci — spróbuj odświeżyć stronę.";
+    netInfo.textContent = t("net_info_error");
   }
   calculate();
 }
 
-function formatNumber(n, digits = 0) {
-  return n.toLocaleString("pl-PL", { maximumFractionDigits: digits });
+async function fetchBtcPrice() {
+  const priceInfo = document.getElementById("price-info");
+  try {
+    const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,eur,pln");
+    const data = await res.json();
+    btcPrices = data.bitcoin;
+    priceInfo.textContent = t("price_info", formatNumber(btcPrices.usd), formatNumber(btcPrices.eur), formatNumber(btcPrices.pln));
+  } catch (e) {
+    priceInfo.textContent = t("price_info_error");
+  }
+  calculate();
 }
 
 function hashesPerSecondFromWatts(watts, efficiencyJPerTh) {
@@ -44,16 +60,24 @@ function wattsNeededFor1BtcPerDay(efficiencyJPerTh) {
   return thNeeded * efficiencyJPerTh;
 }
 
+function formatValue(btcAmount) {
+  if (!btcPrices) return "–";
+  const usd = btcAmount * btcPrices.usd;
+  const eur = btcAmount * btcPrices.eur;
+  const pln = btcAmount * btcPrices.pln;
+  return `$${formatNumber(usd, 2)} / €${formatNumber(eur, 2)} / ${formatNumber(pln, 2)} zł`;
+}
+
 function renderMiners(maxWatts) {
   const container = document.getElementById("miners-table");
   const fitting = MINERS.filter(m => !maxWatts || m.watts <= maxWatts).sort((a, b) => a.watts - b.watts);
 
   if (!maxWatts) {
-    container.innerHTML = `<p class="hint">Wpisz dostępną moc powyżej, żeby zobaczyć pasujące koparki.</p>`;
+    container.innerHTML = `<p class="hint">${t("miners_table_empty")}</p>`;
     return;
   }
   if (fitting.length === 0) {
-    container.innerHTML = `<p class="hint">Żadna z uwzględnionych koparek nie mieści się w ${formatNumber(maxWatts)} W.</p>`;
+    container.innerHTML = `<p class="hint">${t("miners_table_none", formatNumber(maxWatts))}</p>`;
     return;
   }
 
@@ -70,7 +94,7 @@ function renderMiners(maxWatts) {
   }).join("");
 
   container.innerHTML = `<table>
-    <thead><tr><th>Model</th><th>Pobór</th><th>Hashrate</th><th>Sats/dzień</th></tr></thead>
+    <thead><tr><th>${t("table_model")}</th><th>${t("table_watts")}</th><th>${t("table_hashrate")}</th><th>${t("table_sats_day")}</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
 }
@@ -80,7 +104,7 @@ function updateOneBtcInfo(efficiency) {
   if (!oneBtcBox) return;
   const wattsFor1Btc = efficiency > 0 ? wattsNeededFor1BtcPerDay(efficiency) : null;
   if (wattsFor1Btc) {
-    oneBtcBox.textContent = `Przy ${efficiency} J/TH, żeby wykopać 1 BTC w 24h, potrzeba ~${formatNumber(wattsFor1Btc)} W (~${formatNumber(wattsFor1Btc / 1e6, 2)} MW) mocy obliczeniowej.`;
+    oneBtcBox.textContent = t("one_btc_info", efficiency, formatNumber(wattsFor1Btc), formatNumber(wattsFor1Btc / 1e6, 2));
   } else {
     oneBtcBox.textContent = "";
   }
@@ -101,7 +125,7 @@ function populateMinerSelect(maxWatts) {
     `<option value="${m.name}">${m.name} — ${formatNumber(m.watts)} W, ${m.hashrateThs} TH/s (${minerEfficiency(m).toFixed(1)} J/TH)</option>`
   ).join("");
 
-  select.innerHTML = `<option value="custom">Własna efektywność (J/TH)</option>` + options;
+  select.innerHTML = `<option value="custom">${t("custom_efficiency")}</option>` + options;
 
   // zachowaj wybór, jeśli dalej mieści się w mocy
   if (previous && [...select.options].some(o => o.value === previous)) {
@@ -109,11 +133,11 @@ function populateMinerSelect(maxWatts) {
   }
 
   if (!maxWatts) {
-    hint.textContent = "Wpisz dostępną moc, żeby zobaczyć koparki, które się w niej mieszczą.";
+    hint.textContent = t("miner_hint_empty");
   } else if (fitting.length === 0) {
-    hint.textContent = `Żadna z uwzględnionych koparek nie mieści się w ${formatNumber(maxWatts)} W — możesz podać własną efektywność.`;
+    hint.textContent = t("miner_hint_none", formatNumber(maxWatts));
   } else {
-    hint.textContent = `${fitting.length} model(i) mieści się w ${formatNumber(maxWatts)} W.`;
+    hint.textContent = t("miner_hint_count", fitting.length);
   }
 
   toggleCustomEfficiency();
@@ -160,7 +184,7 @@ function calculate() {
   } else {
     hashrateHs = hashesPerSecondFromWatts(watts, efficiency);
     usedWatts = watts;
-    setupLabel = `${efficiency} J/TH (własna)`;
+    setupLabel = t("setup_custom", efficiency);
   }
 
   const result = calcSatsPerDay(hashrateHs);
@@ -168,11 +192,13 @@ function calculate() {
   if (result) {
     document.getElementById("r-setup").textContent = setupLabel;
     document.getElementById("r-used-watts").textContent =
-      `${formatNumber(usedWatts)} W z ${formatNumber(watts)} W`;
+      `${formatNumber(usedWatts)} W / ${formatNumber(watts)} W`;
     document.getElementById("r-hashrate").textContent = `${formatNumber(hashrateHs / 1e12, 2)} TH/s`;
     document.getElementById("r-btc-day").textContent = result.btcPerDay.toFixed(8);
     document.getElementById("r-sats-day").textContent = formatNumber(result.satsPerDay);
     document.getElementById("r-sats-month").textContent = formatNumber(result.satsPerDay * 30);
+    document.getElementById("r-value-day").textContent = formatValue(result.btcPerDay);
+    document.getElementById("r-value-month").textContent = formatValue(result.btcPerDay * 30);
     document.getElementById("r-share").textContent = `${(result.share * 100).toExponential(2)}%`;
     resultBox.classList.remove("hidden");
   }
@@ -183,6 +209,17 @@ function calculate() {
 function onWattsChanged(watts) {
   populateMinerSelect(watts > 0 ? watts : 0);
   calculate();
+}
+
+function onLanguageChanged() {
+  populateMinerSelect(parseFloat(document.getElementById("watts").value) || 0);
+  calculate();
+  if (networkHashrateHs) {
+    document.getElementById("net-info").textContent = t("net_info", (networkHashrateHs / 1e18).toFixed(1), (networkDifficulty / 1e12).toFixed(2));
+  }
+  if (btcPrices) {
+    document.getElementById("price-info").textContent = t("price_info", formatNumber(btcPrices.usd), formatNumber(btcPrices.eur), formatNumber(btcPrices.pln));
+  }
 }
 
 document.getElementById("calc").addEventListener("click", calculate);
@@ -206,4 +243,5 @@ document.getElementById("efficiency").addEventListener("change", calculate);
 
 populateMinerSelect(0);
 fetchNetworkHashrate();
+fetchBtcPrice();
 renderMiners(0);

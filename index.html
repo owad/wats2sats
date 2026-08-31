@@ -3,59 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>wats2sats — ile satoshi z Twoich watów?</title>
+<title data-i18n="title">wats2sats — ile satoshi z Twoich watów?</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrap">
   <header>
+    <div class="lang-switch">
+      <button id="lang-pl" class="lang-btn">PL</button>
+      <button id="lang-en" class="lang-btn">EN</button>
+    </div>
     <h1>⚡ wats2sats</h1>
-    <p class="subtitle">Ile satoshi da się wykopać przy zadanej mocy (ciągłej)?</p>
+    <p class="subtitle" data-i18n="subtitle">Ile satoshi da się wykopać przy zadanej mocy (ciągłej)?</p>
   </header>
 
   <section class="card">
-    <label for="watts">Dostępna moc (W, ciągła)</label>
+    <label for="watts" data-i18n="watts_label">Dostępna moc (W, ciągła)</label>
     <input type="number" id="watts" min="0" step="1" placeholder="np. 3500">
     <input type="range" id="watts-slider" class="slider" min="0" max="8000" step="10" value="0">
 
-    <label for="miner">Koparka</label>
+    <label for="miner" data-i18n="miner_label">Koparka</label>
     <select id="miner">
-      <option value="custom">Własna efektywność (J/TH)</option>
+      <option value="custom" data-i18n="custom_efficiency">Własna efektywność (J/TH)</option>
     </select>
-    <p class="hint" id="miner-hint">Lista zawiera tylko modele, których pobór mocy mieści się w podanej mocy.</p>
+    <p class="hint" id="miner-hint"></p>
 
     <div id="custom-eff-wrap">
-      <label for="efficiency">Efektywność koparki (J/TH)</label>
+      <label for="efficiency" data-i18n="efficiency_label">Efektywność koparki (J/TH)</label>
       <input type="number" id="efficiency" min="1" step="0.1" value="17.5">
-      <p class="hint">17.5 J/TH to mniej więcej dzisiejszy nowoczesny ASIC.</p>
+      <p class="hint" data-i18n="efficiency_hint">17.5 J/TH to mniej więcej dzisiejszy nowoczesny ASIC.</p>
     </div>
 
-    <button id="calc">Oblicz</button>
+    <button id="calc" data-i18n="calc_button">Oblicz</button>
 
     <div id="result" class="result hidden">
-      <div class="result-row"><span>Konfiguracja</span><strong id="r-setup">–</strong></div>
-      <div class="result-row"><span>Wykorzystana moc</span><strong id="r-used-watts">–</strong></div>
-      <div class="result-row"><span>Szacowany hashrate</span><strong id="r-hashrate">–</strong></div>
-      <div class="result-row"><span>BTC / dzień</span><strong id="r-btc-day">–</strong></div>
-      <div class="result-row"><span>Sats / dzień</span><strong id="r-sats-day">–</strong></div>
-      <div class="result-row"><span>Sats / miesiąc</span><strong id="r-sats-month">–</strong></div>
-      <div class="result-row"><span>Udział w sieci</span><strong id="r-share">–</strong></div>
+      <div class="result-row"><span data-i18n="r_setup">Konfiguracja</span><strong id="r-setup">–</strong></div>
+      <div class="result-row"><span data-i18n="r_used_watts">Wykorzystana moc</span><strong id="r-used-watts">–</strong></div>
+      <div class="result-row"><span data-i18n="r_hashrate">Szacowany hashrate</span><strong id="r-hashrate">–</strong></div>
+      <div class="result-row"><span data-i18n="r_btc_day">BTC / dzień</span><strong id="r-btc-day">–</strong></div>
+      <div class="result-row"><span data-i18n="r_sats_day">Sats / dzień</span><strong id="r-sats-day">–</strong></div>
+      <div class="result-row"><span data-i18n="r_sats_month">Sats / miesiąc</span><strong id="r-sats-month">–</strong></div>
+      <div class="result-row"><span data-i18n="r_value_day">Wartość / dzień</span><strong id="r-value-day">–</strong></div>
+      <div class="result-row"><span data-i18n="r_value_month">Wartość / miesiąc</span><strong id="r-value-month">–</strong></div>
+      <div class="result-row"><span data-i18n="r_share">Udział w sieci</span><strong id="r-share">–</strong></div>
     </div>
     <p id="net-info" class="hint"></p>
     <p id="one-btc-info" class="hint"></p>
+    <p id="price-info" class="hint"></p>
   </section>
 
   <section class="card">
-    <h2>Koparki, które zmieszczą się w tej mocy</h2>
-    <p class="hint">Przybliżone specyfikacje producentów (mogą się różnić w praktyce). Pokazujemy modele o poborze mocy równym lub mniejszym od wpisanego powyżej.</p>
+    <h2 data-i18n="miners_heading">Koparki, które zmieszczą się w tej mocy</h2>
+    <p class="hint" data-i18n="miners_hint">Przybliżone specyfikacje producentów (mogą się różnić w praktyce). Pokazujemy modele o poborze mocy równym lub mniejszym od wpisanego powyżej.</p>
     <div id="miners-table"></div>
   </section>
 
   <footer>
-    <p>Dane sieci (hashrate, trudność) pobierane na żywo z <a href="https://mempool.space" target="_blank" rel="noopener">mempool.space</a>. Nagroda za blok: 3.125 BTC. Kalkulator ma charakter szacunkowy — nie uwzględnia opłat, przestojów, kosztów prądu ani zmian trudności w czasie.</p>
+    <p data-i18n="footer_note">Dane sieci (hashrate, trudność) pobierane na żywo z <a href="https://mempool.space" target="_blank" rel="noopener">mempool.space</a>, kurs BTC z CoinGecko. Nagroda za blok: 3.125 BTC. Kalkulator ma charakter szacunkowy — nie uwzględnia opłat, przestojów, kosztów prądu ani zmian trudności w czasie.</p>
   </footer>
 </div>
 <script src="miners.js"></script>
+<script src="i18n.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
