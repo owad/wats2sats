@@ -156,7 +156,7 @@ function populateMinerSelect(maxWatts) {
   const fitting = MINERS.filter(m => !maxWatts || m.watts <= maxWatts).sort((a, b) => a.watts - b.watts);
 
   const options = fitting.map(m =>
-    `<option value="${m.name}">${m.name} — ${formatNumber(m.watts)} W, ${m.hashrateThs} TH/s (${minerEfficiency(m).toFixed(1)} J/TH)</option>`
+    `<option value="${m.name}">${formatNumber(m.watts)} W, ${m.hashrateThs} TH/s (${minerEfficiency(m).toFixed(1)} J/TH) — ${m.name}</option>`
   ).join("");
 
   select.innerHTML = `<option value="custom">${t("custom_efficiency")}</option>` + options;
