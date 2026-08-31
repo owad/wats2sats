@@ -136,6 +136,7 @@ function buildMinerRows(maxWatts) {
       watts: m.watts,
       hashrate: m.hashrateThs,
       priceGross: grossPrice(m),
+      priceEstimated: !!m.estimated,
       priceTh: pricePerTh(m),
       satsDay: result ? result.satsPerDay : -1,
       satsDayLabel: result ? formatNumber(result.satsPerDay) : "–",
@@ -169,7 +170,7 @@ function renderMiners(maxWatts) {
       <td>${r.name}${unitsLabel}</td>
       <td>${formatNumber(r.watts)} W</td>
       <td>${r.hashrate} TH/s</td>
-      <td>${formatMoney(r.priceGross, 0)}</td>
+      <td>${r.priceEstimated ? "~" : ""}${formatMoney(r.priceGross, 0)}</td>
       <td>$${r.priceTh.toFixed(0)}</td>
       <td>${r.satsDayLabel}</td>
       <td>${r.paybackLabel}</td>
