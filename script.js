@@ -33,7 +33,7 @@ async function fetchBtcPrice() {
     const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,eur,pln");
     const data = await res.json();
     btcPrices = data.bitcoin;
-    priceInfo.textContent = t("price_info", formatNumber(btcPrices.usd), formatNumber(btcPrices.eur), formatNumber(btcPrices.pln));
+    priceInfo.textContent = t("price_info", formatMoney(btcPrices[activeCurrency()], 0));
   } catch (e) {
     priceInfo.textContent = t("price_info_error");
   }
@@ -60,12 +60,24 @@ function wattsNeededFor1BtcPerDay(efficiencyJPerTh) {
   return thNeeded * efficiencyJPerTh;
 }
 
+// PL -> PLN, wszystko inne (EN) -> USD.
+function activeCurrency() {
+  return currentLang === "pl" ? "pln" : "usd";
+}
+
+function formatMoney(amount, digits = 2) {
+  const cur = activeCurrency();
+  return cur === "pln" ? `${formatNumber(amount, digits)} zł` : `$${formatNumber(amount, digits)}`;
+}
+
+function valueInActiveCurrency(btcAmount) {
+  if (!btcPrices) return null;
+  return btcAmount * btcPrices[activeCurrency()];
+}
+
 function formatValue(btcAmount) {
-  if (!btcPrices) return "–";
-  const usd = btcAmount * btcPrices.usd;
-  const eur = btcAmount * btcPrices.eur;
-  const pln = btcAmount * btcPrices.pln;
-  return `$${formatNumber(usd, 2)} / €${formatNumber(eur, 2)} / ${formatNumber(pln, 2)} zł`;
+  const v = valueInActiveCurrency(btcAmount);
+  return v == null ? "–" : formatMoney(v);
 }
 
 let tableSort = { key: "watts", dir: 1 };
@@ -96,7 +108,7 @@ function buildMinerRows(maxWatts) {
       name: m.name,
       watts: m.watts,
       hashrate: m.hashrateThs,
-      priceGross: grossPricePln(m),
+      priceGross: grossPrice(m),
       priceTh: pricePerTh(m),
       satsDay: result ? result.satsPerDay : -1,
       satsDayLabel: result ? formatNumber(result.satsPerDay) : "–",
@@ -130,7 +142,7 @@ function renderMiners(maxWatts) {
       <td>${r.name}${unitsLabel}</td>
       <td>${formatNumber(r.watts)} W</td>
       <td>${r.hashrate} TH/s</td>
-      <td>${formatNumber(r.priceGross)} zł</td>
+      <td>${formatMoney(r.priceGross, 0)}</td>
       <td>$${r.priceTh.toFixed(0)}</td>
       <td>${r.satsDayLabel}</td>
       <td>${r.paybackLabel}</td>
@@ -164,7 +176,8 @@ function pricePerTh(m) {
   return m.priceUsd / m.hashrateThs;
 }
 
-function grossPricePln(m) {
+function grossPrice(m) {
+  if (activeCurrency() === "usd") return m.priceUsd;
   const usdToPln = btcPrices ? btcPrices.pln / btcPrices.usd : 4.0;
   return m.priceUsd * usdToPln;
 }
@@ -175,9 +188,9 @@ function paybackDays(m) {
   if (!networkHashrateHs || !btcPrices) return null;
   const result = calcSatsPerDay(m.hashrateThs * 1e12);
   if (!result) return null;
-  const dailyValuePln = result.btcPerDay * btcPrices.pln;
-  if (dailyValuePln <= 0) return null;
-  return grossPricePln(m) / dailyValuePln;
+  const dailyValue = valueInActiveCurrency(result.btcPerDay);
+  if (!dailyValue || dailyValue <= 0) return null;
+  return grossPrice(m) / dailyValue;
 }
 
 function formatPayback(days) {
@@ -367,7 +380,7 @@ function onLanguageChanged() {
     document.getElementById("net-info").textContent = t("net_info", (networkHashrateHs / 1e18).toFixed(1), (networkDifficulty / 1e12).toFixed(2));
   }
   if (btcPrices) {
-    document.getElementById("price-info").textContent = t("price_info", formatNumber(btcPrices.usd), formatNumber(btcPrices.eur), formatNumber(btcPrices.pln));
+    document.getElementById("price-info").textContent = t("price_info", formatMoney(btcPrices[activeCurrency()], 0));
   }
 }
 
