@@ -68,32 +68,78 @@ function formatValue(btcAmount) {
   return `$${formatNumber(usd, 2)} / €${formatNumber(eur, 2)} / ${formatNumber(pln, 2)} zł`;
 }
 
-function renderMiners(maxWatts) {
-  const container = document.getElementById("miners-table");
-  const sorted = [...MINERS].sort((a, b) => a.watts - b.watts);
+let tableSort = { key: "watts", dir: 1 };
+let lastRenderedWatts = 0;
 
-  const rows = sorted.map(m => {
+const SORT_COLUMNS = [
+  { key: "name", label: () => t("table_model") },
+  { key: "watts", label: () => t("table_watts") },
+  { key: "hashrate", label: () => t("table_hashrate") },
+  { key: "priceGross", label: () => t("table_price_gross") },
+  { key: "priceTh", label: () => t("table_price_th") },
+  { key: "satsDay", label: () => t("table_sats_day") },
+  { key: "payback", label: () => t("table_payback") },
+];
+
+function buildMinerRows(maxWatts) {
+  return MINERS.map(m => {
     const fits = maxWatts > 0 && m.watts <= maxWatts;
     const units = fits ? Math.floor(maxWatts / m.watts) : 0;
     // przy dopasowaniu liczymy dla tylu sztuk, ile zmieści się w mocy; inaczej dla jednej
     const hs = (fits ? units : 1) * m.hashrateThs * 1e12;
     const result = calcSatsPerDay(hs);
-    const satsDay = result ? formatNumber(result.satsPerDay) : "–";
-    const unitsLabel = fits && units > 1 ? ` <span class="units">×${units}</span>` : "";
-    return `<tr class="${fits ? "" : "no-fit"}">
-      <td>${m.name}${unitsLabel}</td>
-      <td>${formatNumber(m.watts)} W</td>
-      <td>${m.hashrateThs} TH/s</td>
-      <td>${formatNumber(grossPricePln(m))} zł</td>
-      <td>$${pricePerTh(m).toFixed(0)}</td>
-      <td>${satsDay}</td>
-      <td>${formatPayback(paybackDays(m))}</td>
+    const paybackD = paybackDays(m);
+    return {
+      miner: m,
+      fits,
+      units,
+      name: m.name,
+      watts: m.watts,
+      hashrate: m.hashrateThs,
+      priceGross: grossPricePln(m),
+      priceTh: pricePerTh(m),
+      satsDay: result ? result.satsPerDay : -1,
+      satsDayLabel: result ? formatNumber(result.satsPerDay) : "–",
+      payback: paybackD == null ? Infinity : paybackD,
+      paybackLabel: formatPayback(paybackD),
+    };
+  });
+}
+
+function renderMiners(maxWatts) {
+  lastRenderedWatts = maxWatts;
+  const container = document.getElementById("miners-table");
+  const rows = buildMinerRows(maxWatts);
+
+  rows.sort((a, b) => {
+    const av = a[tableSort.key];
+    const bv = b[tableSort.key];
+    const cmp = typeof av === "string" ? av.localeCompare(bv) : av - bv;
+    return cmp * tableSort.dir;
+  });
+
+  const headerCells = SORT_COLUMNS.map(col => {
+    const active = tableSort.key === col.key;
+    const arrow = active ? (tableSort.dir === 1 ? " ▲" : " ▼") : "";
+    return `<th data-sort-key="${col.key}" class="${active ? "sorted" : ""}">${col.label()}${arrow}</th>`;
+  }).join("");
+
+  const bodyRows = rows.map(r => {
+    const unitsLabel = r.fits && r.units > 1 ? ` <span class="units">×${r.units}</span>` : "";
+    return `<tr class="${r.fits ? "" : "no-fit"}">
+      <td>${r.name}${unitsLabel}</td>
+      <td>${formatNumber(r.watts)} W</td>
+      <td>${r.hashrate} TH/s</td>
+      <td>${formatNumber(r.priceGross)} zł</td>
+      <td>$${r.priceTh.toFixed(0)}</td>
+      <td>${r.satsDayLabel}</td>
+      <td>${r.paybackLabel}</td>
     </tr>`;
   }).join("");
 
   container.innerHTML = `<table>
-    <thead><tr><th>${t("table_model")}</th><th>${t("table_watts")}</th><th>${t("table_hashrate")}</th><th>${t("table_price_gross")}</th><th>${t("table_price_th")}</th><th>${t("table_sats_day")}</th><th>${t("table_payback")}</th></tr></thead>
-    <tbody>${rows}</tbody>
+    <thead><tr>${headerCells}</tr></thead>
+    <tbody>${bodyRows}</tbody>
   </table>
   <p class="hint">${t("payback_disclaimer")}</p>
   <p class="hint">${maxWatts > 0 ? t("table_legend", formatNumber(maxWatts)) : t("miners_table_empty")}</p>`;
@@ -358,6 +404,18 @@ document.getElementById("min-equipment-use").addEventListener("click", () => {
     toggleCustomEfficiency();
     calculate();
   }
+});
+
+document.getElementById("miners-table").addEventListener("click", e => {
+  const th = e.target.closest("th[data-sort-key]");
+  if (!th) return;
+  const key = th.dataset.sortKey;
+  if (tableSort.key === key) {
+    tableSort.dir *= -1;
+  } else {
+    tableSort = { key, dir: 1 };
+  }
+  renderMiners(lastRenderedWatts);
 });
 
 populateMinerSelect(0);

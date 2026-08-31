@@ -202,7 +202,9 @@ th, td {
   border-bottom: 1px solid var(--border);
 }
 
-th { color: var(--muted); font-weight: 500; }
+th { color: var(--muted); font-weight: 500; cursor: pointer; user-select: none; white-space: nowrap; }
+th:hover { color: var(--text); }
+th.sorted { color: var(--accent); }
 
 tr.no-fit td {
   opacity: 0.4;
