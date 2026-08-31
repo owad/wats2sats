@@ -75,8 +75,7 @@ function renderMiners(maxWatts) {
   </table>`;
 }
 
-function updateOneBtcInfo() {
-  const efficiency = parseFloat(document.getElementById("efficiency").value);
+function updateOneBtcInfo(efficiency) {
   const oneBtcBox = document.getElementById("one-btc-info");
   if (!oneBtcBox) return;
   const wattsFor1Btc = efficiency > 0 ? wattsNeededFor1BtcPerDay(efficiency) : null;
@@ -87,12 +86,55 @@ function updateOneBtcInfo() {
   }
 }
 
+function minerEfficiency(m) {
+  return m.watts / m.hashrateThs;
+}
+
+function populateMinerSelect(maxWatts) {
+  const select = document.getElementById("miner");
+  const hint = document.getElementById("miner-hint");
+  const previous = select.value;
+
+  const fitting = MINERS.filter(m => !maxWatts || m.watts <= maxWatts).sort((a, b) => a.watts - b.watts);
+
+  const options = fitting.map(m =>
+    `<option value="${m.name}">${m.name} — ${formatNumber(m.watts)} W, ${m.hashrateThs} TH/s (${minerEfficiency(m).toFixed(1)} J/TH)</option>`
+  ).join("");
+
+  select.innerHTML = `<option value="custom">Własna efektywność (J/TH)</option>` + options;
+
+  // zachowaj wybór, jeśli dalej mieści się w mocy
+  if (previous && [...select.options].some(o => o.value === previous)) {
+    select.value = previous;
+  }
+
+  if (!maxWatts) {
+    hint.textContent = "Wpisz dostępną moc, żeby zobaczyć koparki, które się w niej mieszczą.";
+  } else if (fitting.length === 0) {
+    hint.textContent = `Żadna z uwzględnionych koparek nie mieści się w ${formatNumber(maxWatts)} W — możesz podać własną efektywność.`;
+  } else {
+    hint.textContent = `${fitting.length} model(i) mieści się w ${formatNumber(maxWatts)} W.`;
+  }
+
+  toggleCustomEfficiency();
+}
+
+function toggleCustomEfficiency() {
+  const isCustom = document.getElementById("miner").value === "custom";
+  document.getElementById("custom-eff-wrap").style.display = isCustom ? "" : "none";
+}
+
 function calculate() {
   const watts = parseFloat(document.getElementById("watts").value);
-  const efficiency = parseFloat(document.getElementById("efficiency").value);
   const resultBox = document.getElementById("result");
+  const selectedName = document.getElementById("miner").value;
+  const miner = MINERS.find(m => m.name === selectedName);
 
-  updateOneBtcInfo();
+  const efficiency = miner
+    ? minerEfficiency(miner)
+    : parseFloat(document.getElementById("efficiency").value);
+
+  updateOneBtcInfo(efficiency);
 
   if (!watts || watts <= 0 || !efficiency || efficiency <= 0) {
     resultBox.classList.add("hidden");
@@ -100,10 +142,33 @@ function calculate() {
     return;
   }
 
-  const hashrateHs = hashesPerSecondFromWatts(watts, efficiency);
+  let hashrateHs;
+  let usedWatts;
+  let setupLabel;
+
+  if (miner) {
+    // ile sztuk zmieści się w dostępnej mocy
+    const units = Math.floor(watts / miner.watts);
+    if (units < 1) {
+      resultBox.classList.add("hidden");
+      renderMiners(watts);
+      return;
+    }
+    hashrateHs = units * miner.hashrateThs * 1e12;
+    usedWatts = units * miner.watts;
+    setupLabel = `${units} × ${miner.name}`;
+  } else {
+    hashrateHs = hashesPerSecondFromWatts(watts, efficiency);
+    usedWatts = watts;
+    setupLabel = `${efficiency} J/TH (własna)`;
+  }
+
   const result = calcSatsPerDay(hashrateHs);
 
   if (result) {
+    document.getElementById("r-setup").textContent = setupLabel;
+    document.getElementById("r-used-watts").textContent =
+      `${formatNumber(usedWatts)} W z ${formatNumber(watts)} W`;
     document.getElementById("r-hashrate").textContent = `${formatNumber(hashrateHs / 1e12, 2)} TH/s`;
     document.getElementById("r-btc-day").textContent = result.btcPerDay.toFixed(8);
     document.getElementById("r-sats-day").textContent = formatNumber(result.satsPerDay);
@@ -117,7 +182,16 @@ function calculate() {
 
 document.getElementById("calc").addEventListener("click", calculate);
 document.getElementById("watts").addEventListener("keydown", e => { if (e.key === "Enter") calculate(); });
-document.getElementById("efficiency").addEventListener("change", updateOneBtcInfo);
+document.getElementById("watts").addEventListener("input", () => {
+  const w = parseFloat(document.getElementById("watts").value);
+  populateMinerSelect(w > 0 ? w : 0);
+});
+document.getElementById("miner").addEventListener("change", () => {
+  toggleCustomEfficiency();
+  calculate();
+});
+document.getElementById("efficiency").addEventListener("change", calculate);
 
+populateMinerSelect(0);
 fetchNetworkHashrate();
 renderMiners(0);

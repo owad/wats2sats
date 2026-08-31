@@ -60,7 +60,7 @@ label {
   margin-bottom: 6px;
 }
 
-input[type="number"] {
+input[type="number"], select {
   width: 100%;
   padding: 10px 12px;
   background: #0e151c;
