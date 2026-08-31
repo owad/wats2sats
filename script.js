@@ -89,12 +89,13 @@ function renderMiners(maxWatts) {
       <td>${m.name}</td>
       <td>${formatNumber(m.watts)} W</td>
       <td>${m.hashrateThs} TH/s</td>
+      <td>$${pricePerTh(m).toFixed(0)}</td>
       <td>${satsDay}</td>
     </tr>`;
   }).join("");
 
   container.innerHTML = `<table>
-    <thead><tr><th>${t("table_model")}</th><th>${t("table_watts")}</th><th>${t("table_hashrate")}</th><th>${t("table_sats_day")}</th></tr></thead>
+    <thead><tr><th>${t("table_model")}</th><th>${t("table_watts")}</th><th>${t("table_hashrate")}</th><th>${t("table_price_th")}</th><th>${t("table_sats_day")}</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
 }
@@ -112,6 +113,37 @@ function updateOneBtcInfo(efficiency) {
 
 function minerEfficiency(m) {
   return m.watts / m.hashrateThs;
+}
+
+function pricePerTh(m) {
+  return m.priceUsd / m.hashrateThs;
+}
+
+function findBestValueCombo(watts) {
+  let best = null;
+  for (const m of MINERS) {
+    if (m.watts > watts) continue;
+    const units = Math.floor(watts / m.watts);
+    if (units < 1) continue;
+    const perTh = pricePerTh(m);
+    if (!best || perTh < best.perTh) {
+      best = { miner: m, units, perTh };
+    }
+  }
+  return best;
+}
+
+function updateBestValueBox(watts) {
+  const box = document.getElementById("best-value-box");
+  const best = watts > 0 ? findBestValueCombo(watts) : null;
+  if (!best) {
+    box.classList.add("hidden");
+    return;
+  }
+  document.getElementById("best-value-text").textContent =
+    t("best_value", best.units, best.miner.name, best.perTh.toFixed(0));
+  box.classList.remove("hidden");
+  box.dataset.minerName = best.miner.name;
 }
 
 function populateMinerSelect(maxWatts) {
@@ -141,6 +173,7 @@ function populateMinerSelect(maxWatts) {
   }
 
   toggleCustomEfficiency();
+  updateBestValueBox(maxWatts);
 }
 
 function toggleCustomEfficiency() {
@@ -240,6 +273,14 @@ document.getElementById("miner").addEventListener("change", () => {
   calculate();
 });
 document.getElementById("efficiency").addEventListener("change", calculate);
+document.getElementById("best-value-use").addEventListener("click", () => {
+  const name = document.getElementById("best-value-box").dataset.minerName;
+  if (name) {
+    document.getElementById("miner").value = name;
+    toggleCustomEfficiency();
+    calculate();
+  }
+});
 
 populateMinerSelect(0);
 fetchNetworkHashrate();

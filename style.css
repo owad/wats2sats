@@ -132,6 +132,29 @@ input[type="number"], select {
   margin-top: 6px;
 }
 
+.best-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(247, 147, 26, 0.1);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.best-value.hidden { display: none; }
+
+.best-value button {
+  width: auto;
+  margin-top: 0;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
 button {
   margin-top: 18px;
   width: 100%;

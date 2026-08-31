@@ -27,6 +27,10 @@
       <option value="custom" data-i18n="custom_efficiency">Własna efektywność (J/TH)</option>
     </select>
     <p class="hint" id="miner-hint"></p>
+    <div id="best-value-box" class="best-value hidden">
+      <span id="best-value-text"></span>
+      <button id="best-value-use" type="button" data-i18n="use_this">Użyj</button>
+    </div>
 
     <div id="custom-eff-wrap">
       <label for="efficiency" data-i18n="efficiency_label">Efektywność koparki (J/TH)</label>
@@ -55,6 +59,7 @@
   <section class="card">
     <h2 data-i18n="miners_heading">Koparki, które zmieszczą się w tej mocy</h2>
     <p class="hint" data-i18n="miners_hint">Przybliżone specyfikacje producentów (mogą się różnić w praktyce). Pokazujemy modele o poborze mocy równym lub mniejszym od wpisanego powyżej.</p>
+    <p class="hint" data-i18n="miners_price_hint">Ceny orientacyjne (rynek nowy/używany) — służą tylko do porównania $/TH, nie traktuj ich jako oferty zakupu.</p>
     <div id="miners-table"></div>
   </section>
 
