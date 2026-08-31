@@ -27,16 +27,43 @@ async function fetchNetworkHashrate() {
   calculate();
 }
 
+async function fetchBtcPriceFromCoingecko() {
+  const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,eur,pln");
+  const data = await res.json();
+  if (!data.bitcoin || !data.bitcoin.usd || !data.bitcoin.pln) throw new Error("incomplete coingecko response");
+  return data.bitcoin;
+}
+
+// CoinGecko bywa blokowany przez adblockery/DNS-filtry — mempool.space + kurs walut jako zapasowe źródło.
+async function fetchBtcPriceFallback() {
+  const [mempoolRes, fxRes] = await Promise.all([
+    fetch("https://mempool.space/api/v1/prices"),
+    fetch("https://api.frankfurter.dev/v1/latest?from=USD&to=PLN,EUR"),
+  ]);
+  const mempool = await mempoolRes.json();
+  const fx = await fxRes.json();
+  if (!mempool.USD || !fx.rates || !fx.rates.PLN) throw new Error("incomplete fallback response");
+  return {
+    usd: mempool.USD,
+    eur: mempool.USD * fx.rates.EUR,
+    pln: mempool.USD * fx.rates.PLN,
+  };
+}
+
 async function fetchBtcPrice() {
   const priceInfo = document.getElementById("price-info");
   try {
-    const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,eur,pln");
-    const data = await res.json();
-    btcPrices = data.bitcoin;
-    priceInfo.textContent = t("price_info", formatMoney(btcPrices[activeCurrency()], 0));
+    btcPrices = await fetchBtcPriceFromCoingecko();
   } catch (e) {
-    priceInfo.textContent = t("price_info_error");
+    try {
+      btcPrices = await fetchBtcPriceFallback();
+    } catch (e2) {
+      priceInfo.textContent = t("price_info_error");
+      calculate();
+      return;
+    }
   }
+  priceInfo.textContent = t("price_info", formatMoney(btcPrices[activeCurrency()], 0));
   calculate();
 }
 
