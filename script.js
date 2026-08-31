@@ -142,14 +142,24 @@ function formatPayback(days) {
 }
 
 function findBestValueCombo(watts) {
+  // Najlepsza opcja = maksymalna łączna moc obliczeniowa (TH/s) osiągalna
+  // z dostępnych watów. Przy remisie wygrywa mniej zmarnowanych watów,
+  // a potem niższa cena za TH.
   let best = null;
   for (const m of MINERS) {
     if (m.watts > watts) continue;
     const units = Math.floor(watts / m.watts);
     if (units < 1) continue;
+    const totalHs = units * m.hashrateThs;
+    const wasted = watts - units * m.watts;
     const perTh = pricePerTh(m);
-    if (!best || perTh < best.perTh) {
-      best = { miner: m, units, perTh };
+    if (
+      !best ||
+      totalHs > best.totalHs ||
+      (totalHs === best.totalHs && wasted < best.wasted) ||
+      (totalHs === best.totalHs && wasted === best.wasted && perTh < best.perTh)
+    ) {
+      best = { miner: m, units, totalHs, wasted, perTh };
     }
   }
   return best;
@@ -163,7 +173,7 @@ function updateBestValueBox(watts) {
     return;
   }
   document.getElementById("best-value-text").textContent =
-    t("best_value", best.units, best.miner.name, best.perTh.toFixed(0));
+    t("best_value", best.units, best.miner.name, formatNumber(best.totalHs, 2));
   box.classList.remove("hidden");
   box.dataset.minerName = best.miner.name;
 }
