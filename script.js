@@ -176,10 +176,10 @@ function renderMiners(maxWatts) {
     </tr>`;
   }).join("");
 
-  container.innerHTML = `<table>
+  container.innerHTML = `<div class="table-scroll"><table>
     <thead><tr>${headerCells}</tr></thead>
     <tbody>${bodyRows}</tbody>
-  </table>
+  </table></div>
   <p class="hint">${t("payback_disclaimer")}</p>
   <p class="hint">${maxWatts > 0 ? t("table_legend", formatNumber(maxWatts)) : t("miners_table_empty")}</p>`;
 }
