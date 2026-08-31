@@ -384,11 +384,19 @@ function calculate() {
     document.getElementById("r-value-month").textContent = formatValue(result.btcPerDay * 30);
     document.getElementById("r-share").textContent = `${(result.share * 100).toExponential(2)}%`;
     const paybackRow = document.getElementById("r-payback-row");
+    const costRow = document.getElementById("r-cost-row");
     if (miner) {
       document.getElementById("r-payback").textContent = formatPayback(paybackDays(miner));
       paybackRow.classList.remove("hidden");
+      const unitPrice = grossPrice(miner);
+      const units = Math.floor(watts / miner.watts);
+      document.getElementById("r-cost").textContent = units > 1
+        ? t("cost_multi", formatMoney(unitPrice, 0), units, formatMoney(unitPrice * units, 0), !!miner.estimated)
+        : t("cost_single", formatMoney(unitPrice, 0), !!miner.estimated);
+      costRow.classList.remove("hidden");
     } else {
       paybackRow.classList.add("hidden");
+      costRow.classList.add("hidden");
     }
     resultBox.classList.remove("hidden");
   }
