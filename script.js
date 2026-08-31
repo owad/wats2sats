@@ -180,11 +180,23 @@ function calculate() {
   renderMiners(watts);
 }
 
+function onWattsChanged(watts) {
+  populateMinerSelect(watts > 0 ? watts : 0);
+  calculate();
+}
+
 document.getElementById("calc").addEventListener("click", calculate);
 document.getElementById("watts").addEventListener("keydown", e => { if (e.key === "Enter") calculate(); });
 document.getElementById("watts").addEventListener("input", () => {
-  const w = parseFloat(document.getElementById("watts").value);
-  populateMinerSelect(w > 0 ? w : 0);
+  const w = parseFloat(document.getElementById("watts").value) || 0;
+  const slider = document.getElementById("watts-slider");
+  if (w <= parseFloat(slider.max)) slider.value = w;
+  onWattsChanged(w);
+});
+document.getElementById("watts-slider").addEventListener("input", () => {
+  const w = parseFloat(document.getElementById("watts-slider").value);
+  document.getElementById("watts").value = w;
+  onWattsChanged(w);
 });
 document.getElementById("miner").addEventListener("change", () => {
   toggleCustomEfficiency();
