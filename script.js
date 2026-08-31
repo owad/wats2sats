@@ -178,6 +178,36 @@ function updateBestValueBox(watts) {
   box.dataset.minerName = best.miner.name;
 }
 
+function findMinEquipmentCombo(watts) {
+  // Minimalna liczba sztuk sprzętu = pojedyncza koparka o największym poborze
+  // mocy, która wciąż mieści się w budżecie. Przy remisie wygrywa większy hashrate.
+  let best = null;
+  for (const m of MINERS) {
+    if (m.watts > watts) continue;
+    if (
+      !best ||
+      m.watts > best.miner.watts ||
+      (m.watts === best.miner.watts && m.hashrateThs > best.miner.hashrateThs)
+    ) {
+      best = { miner: m, units: Math.floor(watts / m.watts) };
+    }
+  }
+  return best;
+}
+
+function updateMinEquipmentBox(watts) {
+  const box = document.getElementById("min-equipment-box");
+  const best = watts > 0 ? findMinEquipmentCombo(watts) : null;
+  if (!best) {
+    box.classList.add("hidden");
+    return;
+  }
+  document.getElementById("min-equipment-text").textContent =
+    t("min_equipment", best.units, best.miner.name);
+  box.classList.remove("hidden");
+  box.dataset.minerName = best.miner.name;
+}
+
 function populateMinerSelect(maxWatts) {
   const select = document.getElementById("miner");
   const hint = document.getElementById("miner-hint");
@@ -206,6 +236,7 @@ function populateMinerSelect(maxWatts) {
 
   toggleCustomEfficiency();
   updateBestValueBox(maxWatts);
+  updateMinEquipmentBox(maxWatts);
 }
 
 function toggleCustomEfficiency() {
@@ -314,6 +345,14 @@ document.getElementById("miner").addEventListener("change", () => {
 document.getElementById("efficiency").addEventListener("change", calculate);
 document.getElementById("best-value-use").addEventListener("click", () => {
   const name = document.getElementById("best-value-box").dataset.minerName;
+  if (name) {
+    document.getElementById("miner").value = name;
+    toggleCustomEfficiency();
+    calculate();
+  }
+});
+document.getElementById("min-equipment-use").addEventListener("click", () => {
+  const name = document.getElementById("min-equipment-box").dataset.minerName;
   if (name) {
     document.getElementById("miner").value = name;
     toggleCustomEfficiency();
