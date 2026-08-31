@@ -87,13 +87,15 @@ function renderMiners(maxWatts) {
       <td>${formatNumber(grossPricePln(m))} zł</td>
       <td>$${pricePerTh(m).toFixed(0)}</td>
       <td>${satsDay}</td>
+      <td>${formatPayback(paybackDays(m))}</td>
     </tr>`;
   }).join("");
 
   container.innerHTML = `<table>
-    <thead><tr><th>${t("table_model")}</th><th>${t("table_watts")}</th><th>${t("table_hashrate")}</th><th>${t("table_price_gross")}</th><th>${t("table_price_th")}</th><th>${t("table_sats_day")}</th></tr></thead>
+    <thead><tr><th>${t("table_model")}</th><th>${t("table_watts")}</th><th>${t("table_hashrate")}</th><th>${t("table_price_gross")}</th><th>${t("table_price_th")}</th><th>${t("table_sats_day")}</th><th>${t("table_payback")}</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>
+  <p class="hint">${t("payback_disclaimer")}</p>
   <p class="hint">${maxWatts > 0 ? t("table_legend", formatNumber(maxWatts)) : t("miners_table_empty")}</p>`;
 }
 
@@ -119,6 +121,24 @@ function pricePerTh(m) {
 function grossPricePln(m) {
   const usdToPln = btcPrices ? btcPrices.pln / btcPrices.usd : 4.0;
   return m.priceUsd * usdToPln;
+}
+
+// Zwraca liczbę dni do zwrotu inwestycji przy założeniu darmowego prądu.
+// Niezależne od liczby sztuk — koszt i przychód skalują się tak samo.
+function paybackDays(m) {
+  if (!networkHashrateHs || !btcPrices) return null;
+  const result = calcSatsPerDay(m.hashrateThs * 1e12);
+  if (!result) return null;
+  const dailyValuePln = result.btcPerDay * btcPrices.pln;
+  if (dailyValuePln <= 0) return null;
+  return grossPricePln(m) / dailyValuePln;
+}
+
+function formatPayback(days) {
+  if (days == null || !isFinite(days)) return "–";
+  if (days < 1) return t("payback_lt_day");
+  if (days > 3650) return t("payback_gt_10y");
+  return t("payback_days", formatNumber(days));
 }
 
 function findBestValueCombo(watts) {
@@ -235,6 +255,13 @@ function calculate() {
     document.getElementById("r-value-day").textContent = formatValue(result.btcPerDay);
     document.getElementById("r-value-month").textContent = formatValue(result.btcPerDay * 30);
     document.getElementById("r-share").textContent = `${(result.share * 100).toExponential(2)}%`;
+    const paybackRow = document.getElementById("r-payback-row");
+    if (miner) {
+      document.getElementById("r-payback").textContent = formatPayback(paybackDays(miner));
+      paybackRow.classList.remove("hidden");
+    } else {
+      paybackRow.classList.add("hidden");
+    }
     resultBox.classList.remove("hidden");
   }
 

@@ -177,6 +177,7 @@ button:hover { filter: brightness(1.08); }
 }
 
 .result.hidden { display: none; }
+.result-row.hidden { display: none; }
 
 .result-row {
   display: flex;
