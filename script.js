@@ -1,0 +1,96 @@
+const BLOCK_REWARD_BTC = 3.125; // do następnego halvingu (~2028)
+const BLOCKS_PER_DAY = 144;
+
+let networkHashrateHs = null;
+
+async function fetchNetworkHashrate() {
+  const netInfo = document.getElementById("net-info");
+  try {
+    const res = await fetch("https://mempool.space/api/v1/mining/hashrate/3d");
+    const data = await res.json();
+    networkHashrateHs = data.currentHashrate;
+    const netInEHs = networkHashrateHs / 1e18;
+    netInfo.textContent = `Aktualny hashrate sieci Bitcoin: ~${netInEHs.toFixed(1)} EH/s (mempool.space)`;
+  } catch (e) {
+    netInfo.textContent = "Nie udało się pobrać aktualnego hashrate sieci — spróbuj odświeżyć stronę.";
+  }
+}
+
+function formatNumber(n, digits = 0) {
+  return n.toLocaleString("pl-PL", { maximumFractionDigits: digits });
+}
+
+function hashesPerSecondFromWatts(watts, efficiencyJPerTh) {
+  const th = watts / efficiencyJPerTh;
+  return th * 1e12;
+}
+
+function calcSatsPerDay(hashrateHs) {
+  if (!networkHashrateHs) return null;
+  const share = hashrateHs / networkHashrateHs;
+  const btcPerDay = share * BLOCKS_PER_DAY * BLOCK_REWARD_BTC;
+  return { btcPerDay, satsPerDay: btcPerDay * 1e8, share };
+}
+
+function renderMiners(maxWatts) {
+  const container = document.getElementById("miners-table");
+  const fitting = MINERS.filter(m => !maxWatts || m.watts <= maxWatts).sort((a, b) => a.watts - b.watts);
+
+  if (!maxWatts) {
+    container.innerHTML = `<p class="hint">Wpisz dostępną moc powyżej, żeby zobaczyć pasujące koparki.</p>`;
+    return;
+  }
+  if (fitting.length === 0) {
+    container.innerHTML = `<p class="hint">Żadna z uwzględnionych koparek nie mieści się w ${formatNumber(maxWatts)} W.</p>`;
+    return;
+  }
+
+  const rows = fitting.map(m => {
+    const hs = m.hashrateThs * 1e12;
+    const result = calcSatsPerDay(hs);
+    const satsDay = result ? formatNumber(result.satsPerDay) : "–";
+    return `<tr>
+      <td>${m.name}</td>
+      <td>${formatNumber(m.watts)} W</td>
+      <td>${m.hashrateThs} TH/s</td>
+      <td>${satsDay}</td>
+    </tr>`;
+  }).join("");
+
+  container.innerHTML = `<table>
+    <thead><tr><th>Model</th><th>Pobór</th><th>Hashrate</th><th>Sats/dzień</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function calculate() {
+  const watts = parseFloat(document.getElementById("watts").value);
+  const efficiency = parseFloat(document.getElementById("efficiency").value);
+  const resultBox = document.getElementById("result");
+
+  if (!watts || watts <= 0 || !efficiency || efficiency <= 0) {
+    resultBox.classList.add("hidden");
+    renderMiners(0);
+    return;
+  }
+
+  const hashrateHs = hashesPerSecondFromWatts(watts, efficiency);
+  const result = calcSatsPerDay(hashrateHs);
+
+  if (result) {
+    document.getElementById("r-hashrate").textContent = `${formatNumber(hashrateHs / 1e12, 2)} TH/s`;
+    document.getElementById("r-btc-day").textContent = result.btcPerDay.toFixed(8);
+    document.getElementById("r-sats-day").textContent = formatNumber(result.satsPerDay);
+    document.getElementById("r-sats-month").textContent = formatNumber(result.satsPerDay * 30);
+    document.getElementById("r-share").textContent = `${(result.share * 100).toExponential(2)}%`;
+    resultBox.classList.remove("hidden");
+  }
+
+  renderMiners(watts);
+}
+
+document.getElementById("calc").addEventListener("click", calculate);
+document.getElementById("watts").addEventListener("keydown", e => { if (e.key === "Enter") calculate(); });
+
+fetchNetworkHashrate();
+renderMiners(0);

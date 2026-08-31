@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>wats2sats — ile satoshi z Twoich watów?</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>⚡ wats2sats</h1>
+    <p class="subtitle">Ile satoshi da się wykopać przy zadanej mocy (ciągłej)?</p>
+  </header>
+
+  <section class="card">
+    <label for="watts">Dostępna moc (W, ciągła)</label>
+    <input type="number" id="watts" min="0" step="1" placeholder="np. 3500">
+
+    <label for="efficiency">Efektywność koparki (J/TH)</label>
+    <input type="number" id="efficiency" min="1" step="0.1" value="17.5">
+    <p class="hint">Domyślnie 17.5 J/TH — mniej więcej dzisiejszy nowoczesny ASIC. Zmień, jeśli znasz konkretny model.</p>
+
+    <button id="calc">Oblicz</button>
+
+    <div id="result" class="result hidden">
+      <div class="result-row"><span>Szacowany hashrate</span><strong id="r-hashrate">–</strong></div>
+      <div class="result-row"><span>BTC / dzień</span><strong id="r-btc-day">–</strong></div>
+      <div class="result-row"><span>Sats / dzień</span><strong id="r-sats-day">–</strong></div>
+      <div class="result-row"><span>Sats / miesiąc</span><strong id="r-sats-month">–</strong></div>
+      <div class="result-row"><span>Udział w sieci</span><strong id="r-share">–</strong></div>
+    </div>
+    <p id="net-info" class="hint"></p>
+  </section>
+
+  <section class="card">
+    <h2>Koparki, które zmieszczą się w tej mocy</h2>
+    <p class="hint">Przybliżone specyfikacje producentów (mogą się różnić w praktyce). Pokazujemy modele o poborze mocy równym lub mniejszym od wpisanego powyżej.</p>
+    <div id="miners-table"></div>
+  </section>
+
+  <footer>
+    <p>Dane sieci (hashrate, trudność) pobierane na żywo z <a href="https://mempool.space" target="_blank" rel="noopener">mempool.space</a>. Nagroda za blok: 3.125 BTC. Kalkulator ma charakter szacunkowy — nie uwzględnia opłat, przestojów, kosztów prądu ani zmian trudności w czasie.</p>
+  </footer>
+</div>
+<script src="miners.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
