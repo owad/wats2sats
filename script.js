@@ -84,13 +84,14 @@ function renderMiners(maxWatts) {
       <td>${m.name}${unitsLabel}</td>
       <td>${formatNumber(m.watts)} W</td>
       <td>${m.hashrateThs} TH/s</td>
+      <td>${formatNumber(grossPricePln(m))} zł</td>
       <td>$${pricePerTh(m).toFixed(0)}</td>
       <td>${satsDay}</td>
     </tr>`;
   }).join("");
 
   container.innerHTML = `<table>
-    <thead><tr><th>${t("table_model")}</th><th>${t("table_watts")}</th><th>${t("table_hashrate")}</th><th>${t("table_price_th")}</th><th>${t("table_sats_day")}</th></tr></thead>
+    <thead><tr><th>${t("table_model")}</th><th>${t("table_watts")}</th><th>${t("table_hashrate")}</th><th>${t("table_price_gross")}</th><th>${t("table_price_th")}</th><th>${t("table_sats_day")}</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>
   <p class="hint">${maxWatts > 0 ? t("table_legend", formatNumber(maxWatts)) : t("miners_table_empty")}</p>`;
@@ -113,6 +114,11 @@ function minerEfficiency(m) {
 
 function pricePerTh(m) {
   return m.priceUsd / m.hashrateThs;
+}
+
+function grossPricePln(m) {
+  const usdToPln = btcPrices ? btcPrices.pln / btcPrices.usd : 4.0;
+  return m.priceUsd * usdToPln;
 }
 
 function findBestValueCombo(watts) {
