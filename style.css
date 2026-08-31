@@ -55,8 +55,11 @@ header {
 
 h1 {
   margin: 0;
-  font-size: 2rem;
-  color: var(--accent);
+}
+
+.logo {
+  height: 44px;
+  width: auto;
 }
 
 .subtitle {

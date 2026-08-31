@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="128" viewBox="0 0 340 64">
+
+<circle cx="32" cy="32" r="28" fill="#101418"></circle>
+<g transform="translate(2,2) scale(0.5)"><g transform="rotate(-14 60 60)" fill="#F7931A"><rect x="52" y="13" width="16" height="18"></rect><rect x="26" y="37" width="68" height="13"></rect><rect x="26" y="55" width="68" height="13"></rect><rect x="26" y="73" width="68" height="13"></rect><rect x="52" y="92" width="16" height="18"></rect></g></g>
+<text x="76" y="45" font-family="Sora, sans-serif" font-weight="800" font-size="36" fill="#FFFFFF" letter-spacing="-0.5">wats2<tspan fill="#F7931A">sats</tspan></text>
+</svg>
