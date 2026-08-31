@@ -1,6 +1,12 @@
 // Przybliżone specyfikacje producentów (mogą się różnić od rzeczywistych warunków pracy).
 const MINERS = [
-  { name: "Bitaxe Gamma 601", watts: 18, hashrateThs: 1.2 },
+  { name: "NerdAxe (BM1366)", watts: 12, hashrateThs: 0.4 },
+  { name: "Bitaxe Ultra (BM1366)", watts: 15, hashrateThs: 0.5 },
+  { name: "Bitaxe Supra (BM1368)", watts: 20, hashrateThs: 0.8 },
+  { name: "Bitaxe Gamma (BM1370)", watts: 18, hashrateThs: 1.2 },
+  { name: "Bitaxe Gamma Turbo", watts: 25, hashrateThs: 2.0 },
+  { name: "NerdQAxe+ (4× BM1368)", watts: 40, hashrateThs: 2.5 },
+  { name: "NerdQAxe++ (4× BM1370)", watts: 60, hashrateThs: 4.8 },
   { name: "Antminer S9", watts: 1372, hashrateThs: 13.5 },
   { name: "Antminer S19", watts: 3250, hashrateThs: 95 },
   { name: "Antminer S19j Pro", watts: 3068, hashrateThs: 104 },
