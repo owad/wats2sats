@@ -70,23 +70,18 @@ function formatValue(btcAmount) {
 
 function renderMiners(maxWatts) {
   const container = document.getElementById("miners-table");
-  const fitting = MINERS.filter(m => !maxWatts || m.watts <= maxWatts).sort((a, b) => a.watts - b.watts);
+  const sorted = [...MINERS].sort((a, b) => a.watts - b.watts);
 
-  if (!maxWatts) {
-    container.innerHTML = `<p class="hint">${t("miners_table_empty")}</p>`;
-    return;
-  }
-  if (fitting.length === 0) {
-    container.innerHTML = `<p class="hint">${t("miners_table_none", formatNumber(maxWatts))}</p>`;
-    return;
-  }
-
-  const rows = fitting.map(m => {
-    const hs = m.hashrateThs * 1e12;
+  const rows = sorted.map(m => {
+    const fits = maxWatts > 0 && m.watts <= maxWatts;
+    const units = fits ? Math.floor(maxWatts / m.watts) : 0;
+    // przy dopasowaniu liczymy dla tylu sztuk, ile zmieści się w mocy; inaczej dla jednej
+    const hs = (fits ? units : 1) * m.hashrateThs * 1e12;
     const result = calcSatsPerDay(hs);
     const satsDay = result ? formatNumber(result.satsPerDay) : "–";
-    return `<tr>
-      <td>${m.name}</td>
+    const unitsLabel = fits && units > 1 ? ` <span class="units">×${units}</span>` : "";
+    return `<tr class="${fits ? "" : "no-fit"}">
+      <td>${m.name}${unitsLabel}</td>
       <td>${formatNumber(m.watts)} W</td>
       <td>${m.hashrateThs} TH/s</td>
       <td>$${pricePerTh(m).toFixed(0)}</td>
@@ -97,7 +92,8 @@ function renderMiners(maxWatts) {
   container.innerHTML = `<table>
     <thead><tr><th>${t("table_model")}</th><th>${t("table_watts")}</th><th>${t("table_hashrate")}</th><th>${t("table_price_th")}</th><th>${t("table_sats_day")}</th></tr></thead>
     <tbody>${rows}</tbody>
-  </table>`;
+  </table>
+  <p class="hint">${maxWatts > 0 ? t("table_legend", formatNumber(maxWatts)) : t("miners_table_empty")}</p>`;
 }
 
 function updateOneBtcInfo(efficiency) {

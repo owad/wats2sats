@@ -40,6 +40,7 @@ const TRANSLATIONS = {
     table_watts: "Pobór",
     table_hashrate: "Hashrate",
     table_sats_day: "Sats/dzień",
+    table_legend: max => `Wyszarzone modele nie mieszczą się w ${max} W. Dla pasujących liczymy tyle sztuk, ile zmieści się w mocy (×N), dla reszty — jedną sztukę.`,
     setup_custom: eff => `${eff} J/TH (własna)`,
   },
   en: {
@@ -82,6 +83,7 @@ const TRANSLATIONS = {
     table_watts: "Power",
     table_hashrate: "Hashrate",
     table_sats_day: "Sats/day",
+    table_legend: max => `Greyed-out models don't fit within ${max} W. For fitting ones we count as many units as the power allows (×N), for the rest — a single unit.`,
     setup_custom: eff => `${eff} J/TH (custom)`,
   },
 };
