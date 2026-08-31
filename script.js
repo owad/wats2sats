@@ -2,6 +2,7 @@ const BLOCK_REWARD_BTC = 3.125; // do następnego halvingu (~2028)
 const BLOCKS_PER_DAY = 144;
 
 let networkHashrateHs = null;
+let networkDifficulty = null;
 
 async function fetchNetworkHashrate() {
   const netInfo = document.getElementById("net-info");
@@ -9,11 +10,14 @@ async function fetchNetworkHashrate() {
     const res = await fetch("https://mempool.space/api/v1/mining/hashrate/3d");
     const data = await res.json();
     networkHashrateHs = data.currentHashrate;
+    networkDifficulty = data.currentDifficulty;
     const netInEHs = networkHashrateHs / 1e18;
-    netInfo.textContent = `Aktualny hashrate sieci Bitcoin: ~${netInEHs.toFixed(1)} EH/s (mempool.space)`;
+    const diffInT = networkDifficulty / 1e12;
+    netInfo.textContent = `Sieć Bitcoin na żywo: ~${netInEHs.toFixed(1)} EH/s, trudność ~${diffInT.toFixed(2)} T (mempool.space)`;
   } catch (e) {
-    netInfo.textContent = "Nie udało się pobrać aktualnego hashrate sieci — spróbuj odświeżyć stronę.";
+    netInfo.textContent = "Nie udało się pobrać aktualnego hashrate/trudności sieci — spróbuj odświeżyć stronę.";
   }
+  calculate();
 }
 
 function formatNumber(n, digits = 0) {
@@ -30,6 +34,14 @@ function calcSatsPerDay(hashrateHs) {
   const share = hashrateHs / networkHashrateHs;
   const btcPerDay = share * BLOCKS_PER_DAY * BLOCK_REWARD_BTC;
   return { btcPerDay, satsPerDay: btcPerDay * 1e8, share };
+}
+
+function wattsNeededFor1BtcPerDay(efficiencyJPerTh) {
+  if (!networkHashrateHs) return null;
+  const share = 1 / (BLOCKS_PER_DAY * BLOCK_REWARD_BTC);
+  const hashrateNeededHs = share * networkHashrateHs;
+  const thNeeded = hashrateNeededHs / 1e12;
+  return thNeeded * efficiencyJPerTh;
 }
 
 function renderMiners(maxWatts) {
@@ -63,10 +75,24 @@ function renderMiners(maxWatts) {
   </table>`;
 }
 
+function updateOneBtcInfo() {
+  const efficiency = parseFloat(document.getElementById("efficiency").value);
+  const oneBtcBox = document.getElementById("one-btc-info");
+  if (!oneBtcBox) return;
+  const wattsFor1Btc = efficiency > 0 ? wattsNeededFor1BtcPerDay(efficiency) : null;
+  if (wattsFor1Btc) {
+    oneBtcBox.textContent = `Przy ${efficiency} J/TH, żeby wykopać 1 BTC w 24h, potrzeba ~${formatNumber(wattsFor1Btc)} W (~${formatNumber(wattsFor1Btc / 1e6, 2)} MW) mocy obliczeniowej.`;
+  } else {
+    oneBtcBox.textContent = "";
+  }
+}
+
 function calculate() {
   const watts = parseFloat(document.getElementById("watts").value);
   const efficiency = parseFloat(document.getElementById("efficiency").value);
   const resultBox = document.getElementById("result");
+
+  updateOneBtcInfo();
 
   if (!watts || watts <= 0 || !efficiency || efficiency <= 0) {
     resultBox.classList.add("hidden");
@@ -91,6 +117,7 @@ function calculate() {
 
 document.getElementById("calc").addEventListener("click", calculate);
 document.getElementById("watts").addEventListener("keydown", e => { if (e.key === "Enter") calculate(); });
+document.getElementById("efficiency").addEventListener("change", updateOneBtcInfo);
 
 fetchNetworkHashrate();
 renderMiners(0);
