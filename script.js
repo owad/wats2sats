@@ -437,11 +437,17 @@ function calculate() {
       paybackRow.classList.remove("hidden");
       const unitPrice = grossPrice(miner);
       const units = Math.floor(watts / miner.watts);
-      document.getElementById("r-cost").textContent = unitPrice == null
+      const costLabel = unitPrice == null
         ? t("price_unknown")
         : units > 1
           ? t("cost_multi", formatMoney(unitPrice, 0), units, formatMoney(unitPrice * units, 0), !!miner.estimated)
           : t("cost_single", formatMoney(unitPrice, 0), !!miner.estimated);
+      const rCost = document.getElementById("r-cost");
+      if (unitPrice != null && miner.buyUrl) {
+        rCost.innerHTML = `<a class="buy-link" href="${miner.buyUrl}" target="_blank" rel="noopener noreferrer" title="${t("buy_link_title")}">${costLabel}</a>`;
+      } else {
+        rCost.textContent = costLabel;
+      }
       costRow.classList.remove("hidden");
     } else {
       paybackRow.classList.add("hidden");
