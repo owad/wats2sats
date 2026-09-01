@@ -97,12 +97,16 @@ function calcSatsPerDay(hashrateHs) {
   return { btcPerDay, satsPerDay: btcPerDay * 1e8, share };
 }
 
-function wattsNeededFor1BtcPerDay(efficiencyJPerTh) {
+function thNeededFor1BtcPerDay() {
   if (!networkHashrateHs) return null;
   const share = 1 / (BLOCKS_PER_DAY * BLOCK_REWARD_BTC);
   const hashrateNeededHs = share * networkHashrateHs;
-  const thNeeded = hashrateNeededHs / 1e12;
-  return thNeeded * efficiencyJPerTh;
+  return hashrateNeededHs / 1e12;
+}
+
+function wattsNeededFor1BtcPerDay(efficiencyJPerTh) {
+  const thNeeded = thNeededFor1BtcPerDay();
+  return thNeeded == null ? null : thNeeded * efficiencyJPerTh;
 }
 
 // PL -> PLN, wszystko inne (EN) -> USD.
@@ -208,8 +212,9 @@ function updateOneBtcInfo(efficiency) {
   const oneBtcBox = document.getElementById("one-btc-box");
   if (!oneBtcText || !oneBtcBox) return;
   const wattsFor1Btc = efficiency > 0 ? wattsNeededFor1BtcPerDay(efficiency) : null;
-  if (wattsFor1Btc) {
-    oneBtcText.textContent = t("one_btc_info", efficiency, formatNumber(wattsFor1Btc), formatNumber(wattsFor1Btc / 1e6, 2));
+  const thFor1Btc = thNeededFor1BtcPerDay();
+  if (wattsFor1Btc && thFor1Btc) {
+    oneBtcText.textContent = t("one_btc_info", efficiency, formatNumber(wattsFor1Btc), formatNumber(wattsFor1Btc / 1e6, 2), formatNumber(thFor1Btc / 1e6, 2));
     oneBtcBox.classList.remove("hidden");
   } else {
     oneBtcText.textContent = "";
