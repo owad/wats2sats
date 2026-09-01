@@ -51,10 +51,28 @@ body::before {
   padding: 32px 20px 60px;
 }
 
+@media (min-width: 960px) {
+  .wrap { max-width: 1160px; }
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (min-width: 960px) {
+  .layout { grid-template-columns: minmax(340px, 480px) 1fr; }
+}
+
 header {
   text-align: center;
   margin-bottom: 28px;
   position: relative;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .lang-switch {
