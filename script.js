@@ -134,6 +134,7 @@ let lastRenderedWatts = 0;
 
 const SORT_COLUMNS = [
   { key: "name", label: () => t("table_model") },
+  { key: "units", label: () => t("table_units") },
   { key: "watts", label: () => t("table_watts") },
   { key: "hashrate", label: () => t("table_hashrate") },
   { key: "priceGross", label: () => t("table_price_gross") },
@@ -187,9 +188,9 @@ function renderMiners(maxWatts) {
   }).join("");
 
   const bodyRows = rows.map(r => {
-    const unitsLabel = r.fits && r.units > 1 ? ` <span class="units">×${r.units}</span>` : "";
     return `<tr class="${r.fits ? "" : "no-fit"}">
-      <td>${r.name}${unitsLabel}</td>
+      <td>${r.name}</td>
+      <td>${r.fits ? `<span class="units">×${r.units}</span>` : "–"}</td>
       <td>${formatNumber(r.watts)} W</td>
       <td>${r.hashrate} TH/s</td>
       <td>${r.priceEstimated ? "~" : ""}${formatMoney(r.priceGross, 0)}</td>
