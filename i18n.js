@@ -30,6 +30,7 @@ const TRANSLATIONS = {
     table_price_gross: "Cena (brutto)",
     table_price_th: "$/TH",
     footer_note: 'Dane sieci (hashrate, trudność) pobierane na żywo z <a href="https://mempool.space" target="_blank" rel="noopener">mempool.space</a>, kurs BTC z CoinGecko. Nagroda za blok: 3.125 BTC. Kalkulator ma charakter szacunkowy — nie uwzględnia opłat, przestojów, kosztów prądu ani zmian trudności w czasie.',
+    footer_contact: 'Kontakt: <a href="mailto:wats2sats@pm.me">wats2sats@pm.me</a>',
     watts_placeholder: "np. 3500",
     watts_needed_no_net: "",
     net_info: (eh, diff) => `Sieć Bitcoin na żywo: ~${eh} EH/s, trudność ~${diff} T (mempool.space)`,
@@ -86,6 +87,7 @@ const TRANSLATIONS = {
     table_price_gross: "Price (gross)",
     table_price_th: "$/TH",
     footer_note: 'Network data (hashrate, difficulty) fetched live from <a href="https://mempool.space" target="_blank" rel="noopener">mempool.space</a>, BTC price from CoinGecko. Block reward: 3.125 BTC. This calculator is an estimate — it doesn\'t account for pool fees, downtime, electricity cost, or difficulty changes over time.',
+    footer_contact: 'Contact: <a href="mailto:wats2sats@pm.me">wats2sats@pm.me</a>',
     watts_placeholder: "e.g. 3500",
     net_info: (eh, diff) => `Live Bitcoin network: ~${eh} EH/s, difficulty ~${diff} T (mempool.space)`,
     net_info_error: "Couldn't fetch current network hashrate/difficulty — try refreshing.",
@@ -125,7 +127,7 @@ function applyStaticTranslations() {
     const key = el.getAttribute("data-i18n");
     const val = TRANSLATIONS[currentLang][key];
     if (typeof val === "string") {
-      if (key === "footer_note") {
+      if (key === "footer_note" || key === "footer_contact") {
         el.innerHTML = val;
       } else {
         el.textContent = val;
