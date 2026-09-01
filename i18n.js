@@ -23,7 +23,7 @@ const TRANSLATIONS = {
     price_unknown: "brak danych",
     miners_heading: "Koparki, które zmieszczą się w tej mocy",
     miners_hint: "Przybliżone specyfikacje producentów (mogą się różnić w praktyce). Pokazujemy modele o poborze mocy równym lub mniejszym od wpisanego powyżej.",
-    miners_price_hint: "Ceny orientacyjne brutto z asicminervalue.com (rynek nowy/używany, przeliczone po bieżącym kursie). Ceny oznaczone „~” to szacunek (interpolacja z podobnych modeli) — dla tego modelu nie było aktywnej oferty. Cena „?” = brak wiarygodnej oferty. Sprzęt konsumencki (grzejniki bitcoinowe) wyceniany ręcznie ze strony producenta. Nie traktuj tego jako oferty zakupu.",
+    miners_price_hint: "Ceny brutto, przeliczone po bieżącym kursie. <strong>Cena będąca linkiem</strong> prowadzi do sklepu, w którym ją zweryfikowano (stan na 2026-09-01) — na razie dotyczy to koparek domowych do 400 W. Ceny bez linku pochodzą z asicminervalue.com i są orientacyjne. Ceny oznaczone „~” to szacunek (interpolacja z podobnych modeli). Cena „?” = brak wiarygodnej oferty. Ceny w sklepach się zmieniają — sprawdź przed zakupem.",
     miners_data_date: date => `Dane sprzętowe (specyfikacje, ceny) zaktualizowane: ${date}.`,
     use_this: "Użyj",
     best_value: (units, name, totalHs) => `💡 Maksymalna moc obliczeniowa: ${units} × ${name} (${totalHs} TH/s łącznie)`,
@@ -55,6 +55,7 @@ const TRANSLATIONS = {
     payback_lt_day: "<1 dzień",
     payback_gt_10y: ">10 lat",
     payback_disclaimer: "Zwrot inwestycji liczony przy założeniu, że prąd jest darmowy — nie uwzględnia kosztów energii, chłodzenia ani przestojów.",
+    buy_link_title: "Otwórz sklep, w którym zweryfikowano tę cenę",
     setup_custom: eff => `${eff} J/TH (własna)`,
   },
   en: {
@@ -81,7 +82,7 @@ const TRANSLATIONS = {
     price_unknown: "no data",
     miners_heading: "Miners that fit within this power budget",
     miners_hint: "Approximate manufacturer specs (real-world results may vary). Showing models with power draw equal to or below the value above.",
-    miners_price_hint: "Rough gross prices from asicminervalue.com (new/used market, converted at the current rate). Prices marked \"~\" are estimated (interpolated from similar models) — no active listing existed for that model. A \"?\" price means no reliable listing. Consumer appliances (Bitcoin heaters) are priced manually from the manufacturer. Not a purchase offer.",
+    miners_price_hint: "Gross prices, converted at the current rate. <strong>A price that is a link</strong> points to the shop where it was verified (as of 2026-09-01) — so far this covers home miners up to 400 W. Prices without a link come from asicminervalue.com and are indicative only. Prices marked \"~\" are estimated (interpolated from similar models). A \"?\" price means no reliable listing. Shop prices change — check before buying.",
     miners_data_date: date => `Hardware data (specs, prices) last updated: ${date}.`,
     use_this: "Use it",
     best_value: (units, name, totalHs) => `💡 Maximum compute power: ${units} × ${name} (${totalHs} TH/s total)`,
@@ -112,6 +113,7 @@ const TRANSLATIONS = {
     payback_lt_day: "<1 day",
     payback_gt_10y: ">10 years",
     payback_disclaimer: "Payback period assumes electricity is free — it ignores power cost, cooling, and downtime.",
+    buy_link_title: "Open the shop where this price was verified",
     setup_custom: eff => `${eff} J/TH (custom)`,
   },
 };
@@ -123,13 +125,16 @@ function t(key, ...args) {
   return typeof entry === "function" ? entry(...args) : entry;
 }
 
+// Klucze, ktorych tresc zawiera wlasny markup i musi trafic do DOM jako HTML.
+const HTML_KEYS = new Set(["footer_note", "footer_contact", "miners_price_hint"]);
+
 function applyStaticTranslations() {
   document.documentElement.lang = currentLang;
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
     const val = TRANSLATIONS[currentLang][key];
     if (typeof val === "string") {
-      if (key === "footer_note" || key === "footer_contact") {
+      if (HTML_KEYS.has(key)) {
         el.innerHTML = val;
       } else {
         el.textContent = val;

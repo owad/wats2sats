@@ -164,6 +164,7 @@ function buildMinerRows(maxWatts) {
       hashrate: m.hashrateThs,
       priceGross: grossPrice(m),
       priceEstimated: !!m.estimated,
+      buyUrl: m.buyUrl || null,
       priceTh: pricePerTh(m),
       priceGrossSort: grossPrice(m) == null ? Infinity : grossPrice(m),
       priceThSort: pricePerTh(m) == null ? Infinity : pricePerTh(m),
@@ -173,6 +174,15 @@ function buildMinerRows(maxWatts) {
       paybackLabel: formatPayback(paybackD),
     };
   });
+}
+
+// Cena linkuje do sklepu, w ktorym ta konkretna cena zostala zweryfikowana,
+// zeby liczby w tabeli dalo sie sprawdzic zamiast brac na wiare.
+function priceCell(r) {
+  if (r.priceGross == null) return "?";
+  const label = (r.priceEstimated ? "~" : "") + formatMoney(r.priceGross, 0);
+  if (!r.buyUrl) return label;
+  return `<a class="buy-link" href="${r.buyUrl}" target="_blank" rel="noopener noreferrer" title="${t("buy_link_title")}">${label}</a>`;
 }
 
 function renderMiners(maxWatts) {
@@ -199,7 +209,7 @@ function renderMiners(maxWatts) {
       <td>${r.fits ? `<span class="units">×${r.units}</span>` : "–"}</td>
       <td>${formatNumber(r.watts)} W</td>
       <td>${r.hashrate} TH/s</td>
-      <td>${r.priceGross == null ? "?" : (r.priceEstimated ? "~" : "") + formatMoney(r.priceGross, 0)}</td>
+      <td>${priceCell(r)}</td>
       <td>${r.priceTh == null ? "?" : "$" + r.priceTh.toFixed(0)}</td>
       <td>${r.satsDayLabel}</td>
       <td>${r.paybackLabel}</td>
