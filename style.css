@@ -24,9 +24,10 @@ body::before {
   inset: 0;
   z-index: -1;
   background-image: url("assets/wats2sats-symbol-only.svg");
-  background-repeat: repeat;
-  background-size: 12vmin 12vmin;
-  opacity: 0.05;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 80vmin 80vmin;
+  opacity: 0.06;
   pointer-events: none;
 }
 
