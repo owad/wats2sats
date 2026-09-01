@@ -265,6 +265,7 @@ button:hover { filter: brightness(1.08); }
 
 .table-scroll {
   overflow-x: auto;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
   margin: 0 -8px;
   padding: 0 8px;
