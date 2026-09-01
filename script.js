@@ -141,8 +141,8 @@ const SORT_COLUMNS = [
   { key: "units", label: () => t("table_units") },
   { key: "watts", label: () => t("table_watts") },
   { key: "hashrate", label: () => t("table_hashrate") },
-  { key: "priceGross", label: () => t("table_price_gross") },
-  { key: "priceTh", label: () => t("table_price_th") },
+  { key: "priceGrossSort", label: () => t("table_price_gross") },
+  { key: "priceThSort", label: () => t("table_price_th") },
   { key: "satsDay", label: () => t("table_sats_day") },
   { key: "payback", label: () => t("table_payback") },
 ];
@@ -165,6 +165,8 @@ function buildMinerRows(maxWatts) {
       priceGross: grossPrice(m),
       priceEstimated: !!m.estimated,
       priceTh: pricePerTh(m),
+      priceGrossSort: grossPrice(m) == null ? Infinity : grossPrice(m),
+      priceThSort: pricePerTh(m) == null ? Infinity : pricePerTh(m),
       satsDay: result ? result.satsPerDay : -1,
       satsDayLabel: result ? formatNumber(result.satsPerDay) : "–",
       payback: paybackD == null ? Infinity : paybackD,
@@ -197,8 +199,8 @@ function renderMiners(maxWatts) {
       <td>${r.fits ? `<span class="units">×${r.units}</span>` : "–"}</td>
       <td>${formatNumber(r.watts)} W</td>
       <td>${r.hashrate} TH/s</td>
-      <td>${r.priceEstimated ? "~" : ""}${formatMoney(r.priceGross, 0)}</td>
-      <td>$${r.priceTh.toFixed(0)}</td>
+      <td>${r.priceGross == null ? "?" : (r.priceEstimated ? "~" : "") + formatMoney(r.priceGross, 0)}</td>
+      <td>${r.priceTh == null ? "?" : "$" + r.priceTh.toFixed(0)}</td>
       <td>${r.satsDayLabel}</td>
       <td>${r.paybackLabel}</td>
     </tr>`;
@@ -232,10 +234,12 @@ function minerEfficiency(m) {
 }
 
 function pricePerTh(m) {
+  if (m.priceUsd == null) return null;
   return m.priceUsd / m.hashrateThs;
 }
 
 function grossPrice(m) {
+  if (m.priceUsd == null) return null;
   if (activeCurrency() === "usd") return m.priceUsd;
   const usdToPln = btcPrices ? btcPrices.pln / btcPrices.usd : 4.0;
   return m.priceUsd * usdToPln;
@@ -249,7 +253,9 @@ function paybackDays(m) {
   if (!result) return null;
   const dailyValue = valueInActiveCurrency(result.btcPerDay);
   if (!dailyValue || dailyValue <= 0) return null;
-  return grossPrice(m) / dailyValue;
+  const gross = grossPrice(m);
+  if (gross == null) return null;
+  return gross / dailyValue;
 }
 
 function formatPayback(days) {
@@ -270,7 +276,7 @@ function findBestValueCombo(watts) {
     if (units < 1) continue;
     const totalHs = units * m.hashrateThs;
     const wasted = watts - units * m.watts;
-    const perTh = pricePerTh(m);
+    const perTh = pricePerTh(m) ?? Infinity;
     if (
       !best ||
       totalHs > best.totalHs ||
@@ -421,9 +427,11 @@ function calculate() {
       paybackRow.classList.remove("hidden");
       const unitPrice = grossPrice(miner);
       const units = Math.floor(watts / miner.watts);
-      document.getElementById("r-cost").textContent = units > 1
-        ? t("cost_multi", formatMoney(unitPrice, 0), units, formatMoney(unitPrice * units, 0), !!miner.estimated)
-        : t("cost_single", formatMoney(unitPrice, 0), !!miner.estimated);
+      document.getElementById("r-cost").textContent = unitPrice == null
+        ? t("price_unknown")
+        : units > 1
+          ? t("cost_multi", formatMoney(unitPrice, 0), units, formatMoney(unitPrice * units, 0), !!miner.estimated)
+          : t("cost_single", formatMoney(unitPrice, 0), !!miner.estimated);
       costRow.classList.remove("hidden");
     } else {
       paybackRow.classList.add("hidden");

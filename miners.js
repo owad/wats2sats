@@ -1,7 +1,13 @@
 // Kompletna lista koparek BTC (SHA-256) z asicminervalue.com (2026-08-31).
-// priceUsd: cena z aktywnej oferty na asicminervalue.com, chyba ze estimated:true
+// priceUsd: cena brutto z aktywnej oferty, chyba ze estimated:true
 // (wtedy: interpolacja $/TH z podobnych pod wzgledem efektywnosci i skali modeli,
-// bo strona nie mial aktywnej oferty dla tego modelu).
+// bo strona nie miala aktywnej oferty dla tego modelu).
+// priceUsd: null = brak wiarygodnej ceny (model wycofany / brak ofert) -> UI pokazuje "?".
+//
+// UWAGA na interpolacje: dziala tylko dla zwyklych ASIC-ow sprzedawanych "za hashrate".
+// Sprzet konsumencki (grzejniki 21energy/Heatbit, male minery hobbystyczne) ma cene
+// urzadzenia AGD, nie cene za TH — interpolacja zaniza ja tam nawet 15x.
+// Dla takich modeli wpisuj ceny recznie ze strony producenta (brutto, z VAT).
 const MINERS_DATA_DATE = "2026-08-31";
 const MINERS = [
   { name: "Bitaxe Ultra 1366", watts: 11, hashrateThs: 0.42, priceUsd: 44, estimated: true },
@@ -11,7 +17,7 @@ const MINERS = [
   { name: "Digital Shovel BluAx", watts: 18, hashrateThs: 1.2, priceUsd: 91, estimated: true },
   { name: "Bitaxe Touch", watts: 22, hashrateThs: 1.6, priceUsd: 346 },
   { name: "Jingle Miner BTC Solo Lite", watts: 23, hashrateThs: 1.2, priceUsd: 99 },
-  { name: "Heatbit Bitair", watts: 25, hashrateThs: 1.2, priceUsd: 75, estimated: true },
+  { name: "Heatbit Bitair", watts: 25, hashrateThs: 1.2, priceUsd: 249 },
   { name: "Lucky Miner LV07", watts: 25, hashrateThs: 1, priceUsd: 81 },
   { name: "Bitaxe Gamma Duo 650", watts: 26, hashrateThs: 1.63, priceUsd: 62, estimated: true },
   { name: "Bitaxe Gamma Turbo", watts: 35, hashrateThs: 2.4, priceUsd: 184, estimated: true },
@@ -44,11 +50,11 @@ const MINERS = [
   { name: "Bitmain Antminer S7-LN", watts: 697, hashrateThs: 2.7, priceUsd: 10, estimated: true },
   { name: "Canaan Avalon Mini 3", watts: 800, hashrateThs: 37.5, priceUsd: 746 },
   { name: "Bitmain Antminer R4", watts: 845, hashrateThs: 8.7, priceUsd: 13, estimated: true },
-  { name: "21energy Ofen 2", watts: 1000, hashrateThs: 40, priceUsd: 162, estimated: true },
+  { name: "21energy Ofen 2", watts: 1000, hashrateThs: 40, priceUsd: 2423 },
   { name: "Pantech SX6", watts: 1000, hashrateThs: 8.5, priceUsd: 13, estimated: true },
   { name: "Bitmain Antminer V9 (4Th)", watts: 1027, hashrateThs: 4, priceUsd: 10, estimated: true },
   { name: "Ebang Ebit E9", watts: 1077, hashrateThs: 6.3, priceUsd: 10, estimated: true },
-  { name: "21energy Ofen 2 Pro", watts: 1100, hashrateThs: 60, priceUsd: 503, estimated: true },
+  { name: "21energy Ofen 2 Pro", watts: 1100, hashrateThs: 60, priceUsd: 2887 },
   { name: "Bitmain Antminer S9 (11.5Th)", watts: 1127, hashrateThs: 11.5, priceUsd: 17, estimated: true },
   { name: "Canaan AvalonMiner 741", watts: 1150, hashrateThs: 7.3, priceUsd: 11, estimated: true },
   { name: "Canaan AvalonMiner 821", watts: 1200, hashrateThs: 11.5, priceUsd: 17, estimated: true },
@@ -66,7 +72,7 @@ const MINERS = [
   { name: "Bitmain Antminer S9j (14.5Th)", watts: 1350, hashrateThs: 14.5, priceUsd: 22, estimated: true },
   { name: "Bitmain Antminer S9 (14Th)", watts: 1372, hashrateThs: 14, priceUsd: 21, estimated: true },
   { name: "Bitfily Snow Panther B1", watts: 1380, hashrateThs: 16, priceUsd: 24, estimated: true },
-  { name: "Heatbit Heatbit", watts: 1400, hashrateThs: 14, priceUsd: 21, estimated: true },
+  { name: "Heatbit Heatbit", watts: 1400, hashrateThs: 14, priceUsd: null },
   { name: "Ebang Ebit E9i", watts: 1420, hashrateThs: 13.5, priceUsd: 20, estimated: true },
   { name: "Bitmain Antminer T9+ (10.5Th)", watts: 1432, hashrateThs: 10.5, priceUsd: 16, estimated: true },
   { name: "Bitmain Antminer T9 (11.5Th)", watts: 1450, hashrateThs: 11.5, priceUsd: 17, estimated: true },
