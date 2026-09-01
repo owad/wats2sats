@@ -152,6 +152,7 @@ input[type="number"], select {
 
 .one-btc-box {
   margin-top: 14px;
+  text-align: left;
   padding: 12px 14px;
   background: rgba(247, 147, 26, 0.12);
   border: 1px solid var(--accent);
