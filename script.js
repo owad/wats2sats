@@ -1,3 +1,21 @@
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  document.getElementById("theme-toggle").textContent = theme === "light" ? "☀️" : "🌙";
+  document.getElementById("logo-img").src = theme === "light"
+    ? "assets/wats2sats-logo-na-jasne-tlo.svg"
+    : "assets/wats2sats-logo-na-ciemne-tlo.svg";
+}
+
+let currentTheme = localStorage.getItem("wats2sats_theme")
+  || (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+applyTheme(currentTheme);
+
+document.getElementById("theme-toggle").addEventListener("click", () => {
+  currentTheme = currentTheme === "light" ? "dark" : "light";
+  localStorage.setItem("wats2sats_theme", currentTheme);
+  applyTheme(currentTheme);
+});
+
 const BLOCK_REWARD_BTC = 3.125; // do następnego halvingu (~2028)
 const BLOCKS_PER_DAY = 144;
 
