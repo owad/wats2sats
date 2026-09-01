@@ -186,13 +186,16 @@ function renderMiners(maxWatts) {
 }
 
 function updateOneBtcInfo(efficiency) {
-  const oneBtcBox = document.getElementById("one-btc-info");
-  if (!oneBtcBox) return;
+  const oneBtcText = document.getElementById("one-btc-info");
+  const oneBtcBox = document.getElementById("one-btc-box");
+  if (!oneBtcText || !oneBtcBox) return;
   const wattsFor1Btc = efficiency > 0 ? wattsNeededFor1BtcPerDay(efficiency) : null;
   if (wattsFor1Btc) {
-    oneBtcBox.textContent = t("one_btc_info", efficiency, formatNumber(wattsFor1Btc), formatNumber(wattsFor1Btc / 1e6, 2));
+    oneBtcText.textContent = t("one_btc_info", efficiency, formatNumber(wattsFor1Btc), formatNumber(wattsFor1Btc / 1e6, 2));
+    oneBtcBox.classList.remove("hidden");
   } else {
-    oneBtcBox.textContent = "";
+    oneBtcText.textContent = "";
+    oneBtcBox.classList.add("hidden");
   }
 }
 
