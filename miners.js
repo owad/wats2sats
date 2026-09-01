@@ -2,6 +2,7 @@
 // priceUsd: cena z aktywnej oferty na asicminervalue.com, chyba ze estimated:true
 // (wtedy: interpolacja $/TH z podobnych pod wzgledem efektywnosci i skali modeli,
 // bo strona nie mial aktywnej oferty dla tego modelu).
+const MINERS_DATA_DATE = "2026-08-31";
 const MINERS = [
   { name: "Bitaxe Ultra 1366", watts: 11, hashrateThs: 0.42, priceUsd: 44, estimated: true },
   { name: "Bitaxe Supra 401", watts: 14, hashrateThs: 0.6, priceUsd: 63, estimated: true },

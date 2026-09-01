@@ -19,8 +19,9 @@ document.getElementById("theme-toggle").addEventListener("click", () => {
 const BLOCK_REWARD_BTC = 3.125; // do następnego halvingu (~2028)
 const BLOCKS_PER_DAY = 144;
 
-let networkHashrateHs = null;
+let networkHashrateHs = null; // obserwowany hashrate sieci (3d avg, do wyświetlenia)
 let networkDifficulty = null;
+let networkHashrateExpected = null; // wyliczony z trudności — używany do obliczeń (wartość oczekiwana, niezależna od chwilowego "szczęścia" sieci)
 let btcPrices = null; // { usd, eur, pln }
 
 function numberLocale() {
@@ -38,6 +39,9 @@ async function fetchNetworkHashrate() {
     const data = await res.json();
     networkHashrateHs = data.currentHashrate;
     networkDifficulty = data.currentDifficulty;
+    // Trudność -> oczekiwany hashrate sieci (diff * 2^32 / 600s) — kanoniczna wartość oczekiwana,
+    // dokładniejsza niż chwilowy obserwowany hashrate (ten potrafi odbiegać o kilka % dzień do dnia).
+    networkHashrateExpected = networkDifficulty * Math.pow(2, 32) / 600;
     netInfo.textContent = t("net_info", (networkHashrateHs / 1e18).toFixed(1), (networkDifficulty / 1e12).toFixed(2));
   } catch (e) {
     netInfo.textContent = t("net_info_error");
@@ -91,16 +95,16 @@ function hashesPerSecondFromWatts(watts, efficiencyJPerTh) {
 }
 
 function calcSatsPerDay(hashrateHs) {
-  if (!networkHashrateHs) return null;
-  const share = hashrateHs / networkHashrateHs;
+  if (!networkHashrateExpected) return null;
+  const share = hashrateHs / networkHashrateExpected;
   const btcPerDay = share * BLOCKS_PER_DAY * BLOCK_REWARD_BTC;
   return { btcPerDay, satsPerDay: btcPerDay * 1e8, share };
 }
 
 function thNeededFor1BtcPerDay() {
-  if (!networkHashrateHs) return null;
+  if (!networkHashrateExpected) return null;
   const share = 1 / (BLOCKS_PER_DAY * BLOCK_REWARD_BTC);
-  const hashrateNeededHs = share * networkHashrateHs;
+  const hashrateNeededHs = share * networkHashrateExpected;
   return hashrateNeededHs / 1e12;
 }
 
@@ -240,7 +244,7 @@ function grossPrice(m) {
 // Zwraca liczbę dni do zwrotu inwestycji przy założeniu darmowego prądu.
 // Niezależne od liczby sztuk — koszt i przychód skalują się tak samo.
 function paybackDays(m) {
-  if (!networkHashrateHs || !btcPrices) return null;
+  if (!networkHashrateExpected || !btcPrices) return null;
   const result = calcSatsPerDay(m.hashrateThs * 1e12);
   if (!result) return null;
   const dailyValue = valueInActiveCurrency(result.btcPerDay);
@@ -436,9 +440,15 @@ function onWattsChanged(watts) {
   calculate();
 }
 
+function updateMinersDataDate() {
+  const el = document.getElementById("miners-data-date");
+  if (el) el.textContent = t("miners_data_date", MINERS_DATA_DATE);
+}
+
 function onLanguageChanged() {
   populateMinerSelect(parseFloat(document.getElementById("watts").value) || 0);
   calculate();
+  updateMinersDataDate();
   if (networkHashrateHs) {
     document.getElementById("net-info").textContent = t("net_info", (networkHashrateHs / 1e18).toFixed(1), (networkDifficulty / 1e12).toFixed(2));
   }
@@ -496,3 +506,4 @@ populateMinerSelect(0);
 fetchNetworkHashrate();
 fetchBtcPrice();
 renderMiners(0);
+updateMinersDataDate();
