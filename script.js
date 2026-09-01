@@ -446,8 +446,6 @@ function onLanguageChanged() {
   }
 }
 
-document.getElementById("calc").addEventListener("click", calculate);
-document.getElementById("watts").addEventListener("keydown", e => { if (e.key === "Enter") calculate(); });
 document.getElementById("watts").addEventListener("input", () => {
   const w = parseFloat(document.getElementById("watts").value) || 0;
   const slider = document.getElementById("watts-slider");
@@ -463,7 +461,7 @@ document.getElementById("miner").addEventListener("change", () => {
   toggleCustomEfficiency();
   calculate();
 });
-document.getElementById("efficiency").addEventListener("change", calculate);
+document.getElementById("efficiency").addEventListener("input", calculate);
 document.getElementById("best-value-use").addEventListener("click", () => {
   const name = document.getElementById("best-value-box").dataset.minerName;
   if (name) {
