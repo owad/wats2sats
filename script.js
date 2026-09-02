@@ -342,6 +342,36 @@ function updateMinEquipmentBox(watts) {
   box.dataset.minerName = best.miner.name;
 }
 
+function findOptimalCombo(watts) {
+  // Najlepsza opcja pod kątem zysku = najkrótszy zwrot z inwestycji (payback),
+  // czyli najlepszy stosunek dziennej wartości do ceny zakupu.
+  let best = null;
+  for (const m of MINERS) {
+    if (m.watts > watts) continue;
+    const units = Math.floor(watts / m.watts);
+    if (units < 1) continue;
+    const payback = paybackDays(m);
+    if (payback == null) continue;
+    if (!best || payback < best.payback) {
+      best = { miner: m, units, payback };
+    }
+  }
+  return best;
+}
+
+function updateOptimalBox(watts) {
+  const box = document.getElementById("optimal-box");
+  const best = watts > 0 ? findOptimalCombo(watts) : null;
+  if (!best) {
+    box.classList.add("hidden");
+    return;
+  }
+  document.getElementById("optimal-text").textContent =
+    t("optimal", best.units, best.miner.name, formatPayback(best.payback));
+  box.classList.remove("hidden");
+  box.dataset.minerName = best.miner.name;
+}
+
 function populateMinerSelect(maxWatts) {
   const select = document.getElementById("miner");
   const hint = document.getElementById("miner-hint");
@@ -371,6 +401,7 @@ function populateMinerSelect(maxWatts) {
   toggleCustomEfficiency();
   updateBestValueBox(maxWatts);
   updateMinEquipmentBox(maxWatts);
+  updateOptimalBox(maxWatts);
 }
 
 function toggleCustomEfficiency() {
@@ -507,6 +538,14 @@ document.getElementById("best-value-use").addEventListener("click", () => {
 });
 document.getElementById("min-equipment-use").addEventListener("click", () => {
   const name = document.getElementById("min-equipment-box").dataset.minerName;
+  if (name) {
+    document.getElementById("miner").value = name;
+    toggleCustomEfficiency();
+    calculate();
+  }
+});
+document.getElementById("optimal-use").addEventListener("click", () => {
+  const name = document.getElementById("optimal-box").dataset.minerName;
   if (name) {
     document.getElementById("miner").value = name;
     toggleCustomEfficiency();
