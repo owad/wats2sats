@@ -1,7 +1,8 @@
 const TRANSLATIONS = {
   pl: {
     title: "wats2sats — ile satoshi z Twoich watów?",
-    subtitle: "Ile satoshi da się wykopać przy zadanej mocy (ciągłej)?",
+    subtitle: "Ile satoshi* da się wykopać przy zadanej mocy (ciągłej)?",
+    satoshi_note: "* 1 00 000 000 satoshi = 1 BTC",
     watts_label: "Dostępna moc (W, ciągła)",
     miner_label: "Koparka",
     custom_efficiency: "Własna efektywność (J/TH)",
@@ -60,7 +61,8 @@ const TRANSLATIONS = {
   },
   en: {
     title: "wats2sats — how many sats from your watts?",
-    subtitle: "How many satoshis can you mine at a given (continuous) power?",
+    subtitle: "How many satoshis* can you mine at a given (continuous) power?",
+    satoshi_note: "* 100,000,000 satoshis = 1 BTC",
     watts_label: "Available power (W, continuous)",
     miner_label: "Miner",
     custom_efficiency: "Custom efficiency (J/TH)",
