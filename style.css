@@ -55,6 +55,10 @@ body::before {
   .wrap { max-width: 1160px; }
 }
 
+@media (min-width: 1300px) {
+  .wrap { max-width: min(94vw, 1800px); }
+}
+
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -62,8 +66,11 @@ body::before {
   align-items: start;
 }
 
-@media (min-width: 960px) {
-  .layout { grid-template-columns: minmax(340px, 480px) minmax(0, 1fr); }
+/* Below 1300px the calculator stays stacked above the table instead of
+   beside it, so the table gets the full wrap width — a side-by-side split
+   there leaves too little room for the table and forces horizontal scroll. */
+@media (min-width: 1300px) {
+  .layout { grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); }
   .layout > .card:first-child {
     position: sticky;
     top: 20px;
