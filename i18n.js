@@ -1,8 +1,8 @@
 const TRANSLATIONS = {
   pl: {
     title: "wats2sats — ile satoshi z Twoich watów?",
-    subtitle: "Ile satoshi* da się wykopać przy zadanej mocy (ciągłej)?",
-    satoshi_note: "* 1 00 000 000 satoshi = 1 BTC",
+    subtitle: "Ile satoshi* wykopiesz przy zadanej, ciągłej mocy?",
+    satoshi_note: "* 100 000 000 satoshi = 1 BTC",
     watts_label: "Dostępna moc (W, ciągła)",
     miner_label: "Koparka",
     custom_efficiency: "Własna efektywność (J/TH)",
