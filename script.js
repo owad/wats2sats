@@ -306,8 +306,13 @@ function updateBestValueBox(watts) {
     box.classList.add("hidden");
     return;
   }
-  document.getElementById("best-value-text").textContent =
-    t("best_value", best.units, best.miner.name, formatNumber(best.totalHs, 2));
+  document.getElementById("best-value-text").textContent = t(
+    "best_value",
+    best.units,
+    best.miner.name,
+    formatNumber(best.totalHs, 2),
+    formatPayback(paybackDays(best.miner))
+  );
   box.classList.remove("hidden");
   box.dataset.minerName = best.miner.name;
 }
@@ -336,8 +341,13 @@ function updateMinEquipmentBox(watts) {
     box.classList.add("hidden");
     return;
   }
-  document.getElementById("min-equipment-text").textContent =
-    t("min_equipment", best.units, best.miner.name);
+  document.getElementById("min-equipment-text").textContent = t(
+    "min_equipment",
+    best.units,
+    best.miner.name,
+    formatNumber(best.units * best.miner.hashrateThs, 2),
+    formatPayback(paybackDays(best.miner))
+  );
   box.classList.remove("hidden");
   box.dataset.minerName = best.miner.name;
 }
@@ -366,8 +376,13 @@ function updateOptimalBox(watts) {
     box.classList.add("hidden");
     return;
   }
-  document.getElementById("optimal-text").textContent =
-    t("optimal", best.units, best.miner.name, formatPayback(best.payback));
+  document.getElementById("optimal-text").textContent = t(
+    "optimal",
+    best.units,
+    best.miner.name,
+    formatNumber(best.units * best.miner.hashrateThs, 2),
+    formatPayback(best.payback)
+  );
   box.classList.remove("hidden");
   box.dataset.minerName = best.miner.name;
 }
