@@ -439,6 +439,14 @@ function calculate() {
   const selectedName = document.getElementById("miner").value;
   const miner = MINERS.find(m => m.name === selectedName);
 
+  // Odświeżamy sugerowane konfiguracje przy każdym calculate(), nie tylko przy zmianie
+  // mocy — inaczej "optymalna" (zależna od payback, czyli od danych sieci/kursu BTC
+  // wczytywanych asynchronicznie) zostaje ukryta na stałe, jeśli watts przyszło z linku
+  // "share" zanim te dane się załadowały.
+  const wattsForBoxes = watts > 0 ? watts : 0;
+  updateBestValueBox(wattsForBoxes);
+  updateMinEquipmentBox(wattsForBoxes);
+  updateOptimalBox(wattsForBoxes);
   updateSuggestionHighlights();
 
   const efficiency = miner
