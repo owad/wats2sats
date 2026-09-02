@@ -1,6 +1,6 @@
 const TRANSLATIONS = {
   pl: {
-    title: "wats2sats — ile satoshi z Twoich watów?",
+    title: "wats2sats — ile bitcoina wykopiesz ze swojego prądu?",
     subtitle: "Ile satoshi* wykopiesz przy zadanej, ciągłej mocy?",
     satoshi_note: "* 100 000 000 satoshi = 1 BTC",
     watts_label: "Dostępna moc (W, ciągła)",
@@ -60,7 +60,7 @@ const TRANSLATIONS = {
     setup_custom: eff => `${eff} J/TH (własna)`,
   },
   en: {
-    title: "wats2sats — how many sats from your watts?",
+    title: "wats2sats — how much bitcoin can your power mine?",
     subtitle: "How many satoshis* can you mine at a given (continuous) power?",
     satoshi_note: "* 100,000,000 satoshis = 1 BTC",
     watts_label: "Available power (W, continuous)",
