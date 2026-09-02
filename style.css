@@ -228,6 +228,11 @@ input[type="number"], select {
 
 .best-value span { min-width: 0; }
 
+.best-value.selected {
+  border-width: 2px;
+  background: rgba(247, 147, 26, 0.22);
+}
+
 .one-btc-box {
   margin-top: 14px;
   text-align: left;

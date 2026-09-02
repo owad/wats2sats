@@ -419,6 +419,15 @@ function populateMinerSelect(maxWatts) {
   updateOptimalBox(maxWatts);
 }
 
+function updateSuggestionHighlights() {
+  const selectedName = document.getElementById("miner").value;
+  for (const id of ["best-value-box", "min-equipment-box", "optimal-box"]) {
+    const box = document.getElementById(id);
+    const isSelected = selectedName !== "custom" && box.dataset.minerName === selectedName;
+    box.classList.toggle("selected", isSelected);
+  }
+}
+
 function toggleCustomEfficiency() {
   const isCustom = document.getElementById("miner").value === "custom";
   document.getElementById("custom-eff-wrap").style.display = isCustom ? "" : "none";
@@ -429,6 +438,8 @@ function calculate() {
   const resultBox = document.getElementById("result");
   const selectedName = document.getElementById("miner").value;
   const miner = MINERS.find(m => m.name === selectedName);
+
+  updateSuggestionHighlights();
 
   const efficiency = miner
     ? minerEfficiency(miner)
@@ -568,6 +579,53 @@ document.getElementById("optimal-use").addEventListener("click", () => {
   }
 });
 
+document.getElementById("share-btn").addEventListener("click", async () => {
+  const btn = document.getElementById("share-btn");
+  const watts = document.getElementById("watts").value;
+  const minerName = document.getElementById("miner").value;
+
+  const params = new URLSearchParams();
+  if (watts) params.set("watts", watts);
+  if (minerName && minerName !== "custom") params.set("miner", minerName);
+
+  const url = `${location.origin}${location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+
+  try {
+    await navigator.clipboard.writeText(url);
+  } catch {
+    window.prompt(t("share_copy_manual"), url);
+    return;
+  }
+
+  const original = btn.textContent;
+  btn.textContent = t("share_copied");
+  setTimeout(() => { btn.textContent = original; }, 2000);
+});
+
+function applySharedParams() {
+  const params = new URLSearchParams(location.search);
+  const watts = parseFloat(params.get("watts"));
+  const minerName = params.get("miner");
+
+  if (watts > 0) {
+    document.getElementById("watts").value = watts;
+    const slider = document.getElementById("watts-slider");
+    if (watts <= parseFloat(slider.max)) slider.value = watts;
+  }
+
+  populateMinerSelect(watts > 0 ? watts : 0);
+
+  if (minerName) {
+    const select = document.getElementById("miner");
+    if ([...select.options].some(o => o.value === minerName)) {
+      select.value = minerName;
+      toggleCustomEfficiency();
+    }
+  }
+
+  calculate();
+}
+
 document.getElementById("miners-table").addEventListener("click", e => {
   const th = e.target.closest("th[data-sort-key]");
   if (!th) return;
@@ -580,8 +638,7 @@ document.getElementById("miners-table").addEventListener("click", e => {
   renderMiners(lastRenderedWatts);
 });
 
-populateMinerSelect(0);
+applySharedParams();
 fetchNetworkHashrate();
 fetchBtcPrice();
-renderMiners(0);
 updateMinersDataDate();
