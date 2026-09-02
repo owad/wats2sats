@@ -59,6 +59,9 @@ const TRANSLATIONS = {
     payback_disclaimer: "Zwrot inwestycji liczony przy założeniu, że prąd jest darmowy — nie uwzględnia kosztów energii, chłodzenia ani przestojów.",
     buy_link_title: "Otwórz sklep, w którym zweryfikowano tę cenę",
     setup_custom: eff => `${eff} J/TH (własna)`,
+    share_button: "🔗 Udostępnij tę konfigurację",
+    share_copied: "✓ Skopiowano link",
+    share_copy_manual: "Skopiuj link:",
   },
   en: {
     title: "wats2sats — how much bitcoin can your power mine?",
@@ -119,6 +122,9 @@ const TRANSLATIONS = {
     payback_disclaimer: "Payback period assumes electricity is free — it ignores power cost, cooling, and downtime.",
     buy_link_title: "Open the shop where this price was verified",
     setup_custom: eff => `${eff} J/TH (custom)`,
+    share_button: "🔗 Share this setup",
+    share_copied: "✓ Link copied",
+    share_copy_manual: "Copy this link:",
   },
 };
 
