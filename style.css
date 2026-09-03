@@ -323,12 +323,19 @@ thead th {
   z-index: 2;
 }
 
-/* przyklejona kolumna z nazwą modelu, żeby przy scrollu wiadomo było co się czyta */
+/* przyklejona kolumna z nazwą modelu, żeby przy scrollu wiadomo było co się czyta.
+   Nazwa może się zawijać i ma limit szerokości — bez tego `nowrap` rozciągał ją
+   do najdłuższego modelu ("Jingle Miner BTC Solo Lite"), a że kolumna jest
+   przyklejona, zjadała nawet 74% ekranu i pozostałe kolumny przewijały się
+   przez ~90-pikselową szczelinę. */
 th:first-child, td:first-child {
   position: sticky;
   left: 0;
   background: var(--card);
   z-index: 1;
+  white-space: normal;
+  max-width: 260px;
+  min-width: 120px;
 }
 
 thead th:first-child {
@@ -344,6 +351,13 @@ tr.no-fit td {
   .card { padding: 16px 12px; }
   table { font-size: 0.8rem; }
   th, td { padding: 7px 5px; }
+
+  /* Na wąskim ekranie przyklejona kolumna musi oddać jak najwięcej miejsca
+     kolumnom z danymi, bo to one się przewijają. */
+  th:first-child, td:first-child {
+    max-width: 116px;
+    min-width: 96px;
+  }
 }
 
 .units {
